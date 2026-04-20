@@ -1,0 +1,43 @@
+interface EmojiPickerProps {
+  onSelect: (emoji: string) => void;
+}
+
+const EMOJI_LIST = [
+  // 电子产品
+  '💻', '📱', '🖥️', '🖨️', '⌨️', '🖱️', '📷', '📹', '🎧', '⌚', '📺', '📻', '🔌', '🔋',
+  // 家具
+  '🛋️', '🛏️', '🚪', '🪑', '📦', '🗄️', '🗃️', '🗑️', '🧹', '🪞', '🪟',
+  // 厨房
+  '🍳', '🍽️', '🥄', '🔪', '🥣', '🍶', '🫖', '☕', '🥤', '🧊',
+  // 衣物
+  '👔', '👗', '👟', '👜', '👒', '🧣', '🧤', '🧥', '👖', '🧦',
+  // 书籍文具
+  '📚', '📖', '📓', '✏️', '🖊️', '📐', '✂️', '📎', '📌',
+  // 运动
+  '⚽', '🏀', '🎾', '🏸', '🏓', '🎣', '🚲', '🛹', '⛷️', '🏋️',
+  // 交通
+  '🚗', '🚲', '🛵', '🏍️', '🛴', '🚕', '🚌', '✈️',
+  // 工具
+  '🔧', '🔨', '🪛', '⛏️', '🪚', '🔩', '⚙️', '🗜️', '🪜',
+  // 植物宠物
+  '🪴', '🌵', '🌸', '🌹', '🐶', '🐱', '🐟', '🐦',
+  // 其他
+  '🎮', '🎸', '🎹', '🎨', '💊', '💰', '💎', '🎁', '☂️', '🧸',
+];
+
+export default function EmojiPicker({ onSelect }: EmojiPickerProps) {
+  return (
+    <div className="grid grid-cols-8 gap-1.5 max-h-48 overflow-y-auto">
+      {EMOJI_LIST.map((emoji) => (
+        <button
+          key={emoji}
+          type="button"
+          onClick={() => onSelect(emoji)}
+          className="w-9 h-9 flex items-center justify-center text-xl rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  );
+}
