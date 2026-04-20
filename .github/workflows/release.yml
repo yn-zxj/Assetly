@@ -64,7 +64,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build macOS Universal
-        run: pnpm tauri build --target universal-apple-darwin --config tauri.macos.conf.json
+        run: pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
