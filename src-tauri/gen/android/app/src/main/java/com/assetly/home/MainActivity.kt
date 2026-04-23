@@ -2,6 +2,7 @@ package com.assetly.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -12,48 +13,53 @@ import androidx.core.content.FileProvider
 
 class MainActivity : TauriActivity() {
 
+  private var webViewRef: WebView? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
 
-    // Completely disable back navigation (both button and swipe gesture)
-    // This prevents ALL forms of back navigation
+    // Register back press callback to intercept all back events
+    // (hardware back button + gesture navigation + system back)
     onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
       override fun handleOnBackPressed() {
-        // Do nothing - completely disable back
-        // This handles both hardware back button and swipe gesture on some devices
+        // Minimize app to background instead of exiting
+        moveTaskToBack(true)
       }
     })
   }
 
-  override fun onWebViewCreate(webView: WebView) {
-    super.onWebViewCreate(webView)
-    // Disable overscroll edge effects (removes the glow at edges)
-    webView.overScrollMode = View.OVER_SCROLL_NEVER
-    // Completely disable WebView navigation history (no back/forward)
-    disableWebViewNavigation(webView)
-    
-    // Add JavaScript interface for file sharing
-    webView.addJavascriptInterface(WebAppInterface(this), "Android")
-    
-    // Monitor page navigation and clear history after each load
-    webView.webViewClient = object : android.webkit.WebViewClient() {
-      override fun onPageFinished(view: WebView?, url: String?) {
-        super.onPageFinished(view, url)
-        // Clear history after each page load to prevent back/forward
-        view?.clearHistory()
-      }
+  // Intercept hardware back key at the lowest level
+  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      moveTaskToBack(true)
+      return true
     }
+    return super.onKeyDown(keyCode, event)
   }
 
-  private fun disableWebViewNavigation(webView: WebView) {
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    webViewRef = webView
+
+    // Disable overscroll edge effects
+    webView.overScrollMode = View.OVER_SCROLL_NEVER
+
     // Disable zoom controls
     webView.settings.setSupportZoom(false)
     webView.settings.builtInZoomControls = false
     webView.settings.displayZoomControls = false
 
-    // Clear history to prevent any back/forward navigation
-    webView.clearHistory()
+    // Add JavaScript interface for file sharing
+    webView.addJavascriptInterface(WebAppInterface(this), "Android")
+
+    // Clear history on each page load
+    webView.webViewClient = object : android.webkit.WebViewClient() {
+      override fun onPageFinished(view: WebView?, url: String?) {
+        super.onPageFinished(view, url)
+        view?.clearHistory()
+      }
+    }
   }
 }
 
@@ -61,33 +67,42 @@ class MainActivity : TauriActivity() {
  * JavaScript interface for Android native features
  */
 class WebAppInterface(private val activity: MainActivity) {
-    
+
+    /**
+     * Share text content as a file via system share panel.
+     * Writes content to cache dir and shares via FileProvider.
+     * Runs startActivity on UI thread to avoid WebView thread issues.
+     */
     @JavascriptInterface
-    fun shareFile(filePath: String, mimeType: String, title: String): Boolean {
+    fun shareTextAsFile(content: String, fileName: String, mimeType: String, title: String): Boolean {
         return try {
-            val file = File(filePath)
-            if (!file.exists()) {
-                return false
-            }
-            
+            // Write to cache directory (always accessible, no permission needed)
+            val shareDir = File(activity.cacheDir, "share")
+            if (!shareDir.exists()) shareDir.mkdirs()
+            val file = File(shareDir, fileName)
+            file.writeText(content)
+
             val uri = FileProvider.getUriForFile(
                 activity,
                 "${activity.packageName}.fileprovider",
                 file
             )
-            
+
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = mimeType
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            
+
             val chooser = Intent.createChooser(shareIntent, title)
-            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            activity.startActivity(chooser)
+
+            // Must run on UI thread
+            activity.runOnUiThread {
+                activity.startActivity(chooser)
+            }
             true
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("WebAppInterface", "Share failed: ${e.message}", e)
             false
         }
     }

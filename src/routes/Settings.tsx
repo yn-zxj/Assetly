@@ -5,7 +5,6 @@ import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
 import { THEME_PRESETS, CURRENCY_OPTIONS } from '../utils/constants';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
-import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -28,61 +27,50 @@ export default function Settings() {
       const fileName = `assetly-export-${new Date().toISOString().slice(0, 10)}.json`;
 
       if (isMobile) {
-        // Mobile: Save to app directory, then use Android native share
-        try {
-          // Save file to app's internal storage
-          const filePath = `exports/${fileName}`;
-          await writeTextFile(filePath, content, { baseDir: BaseDirectory.AppData });
-          
-          // Try to use Android native share via JavaScript interface
-          if (typeof (window as any).Android?.shareFile === 'function') {
-            // Get full path from Tauri
-            const { appDataDir } = await import('@tauri-apps/api/path');
-            const appDir = await appDataDir();
-            const fullPath = `${appDir}${filePath}`;
-            
-            const shared = (window as any).Android.shareFile(
-              fullPath,
+        // Method 1: Android native share (most reliable - native writes file + shares)
+        if (typeof (window as any).Android?.shareTextAsFile === 'function') {
+          try {
+            const shared = (window as any).Android.shareTextAsFile(
+              content,
+              fileName,
               'application/json',
               'Assetly 数据导出'
             );
-            
             if (shared) {
-              setExportMsg('导出成功，已打开分享面板，请选择保存位置');
+              setExportMsg('导出成功，请选择保存位置');
               return;
             }
+          } catch (e) {
+            console.warn('Android share failed:', e);
           }
-          
-          // Fallback: try Web Share API
+        }
+
+        // Method 2: Web Share API with file (fallback)
+        try {
           const blob = new Blob([content], { type: 'application/json' });
           const file = new File([blob], fileName, { type: 'application/json' });
-          
-          if (navigator.share) {
-            try {
-              if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                  files: [file],
-                  title: 'Assetly 数据导出',
-                });
-                setExportMsg('导出成功，已打开分享面板');
-                return;
-              }
-            } catch (shareErr) {
-              if ((shareErr as Error).name === 'AbortError') {
-                setExportMsg('导出已取消');
-                return;
-              }
-            }
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Assetly 数据导出' });
+            setExportMsg('导出成功');
+            return;
           }
-          
-          // Last fallback: browser download
-          fallbackDownload(content, fileName);
-        } catch (err) {
-          console.error('Export error:', err);
-          setExportMsg(`导出失败: ${(err as Error).message}`);
+        } catch (shareErr) {
+          if ((shareErr as Error).name === 'AbortError') {
+            setExportMsg('导出已取消');
+            return;
+          }
+          console.warn('Web Share failed:', shareErr);
+        }
+
+        // Method 3: Copy to clipboard as last resort
+        try {
+          await navigator.clipboard.writeText(content);
+          setExportMsg('分享不可用，数据已复制到剪贴板');
+        } catch {
+          setExportMsg('导出失败：当前环境不支持分享功能');
         }
       } else {
-        // Desktop: use browser download
+        // Desktop: browser download
         fallbackDownload(content, fileName);
       }
     } catch (err) {

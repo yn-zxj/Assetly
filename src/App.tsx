@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import Dashboard from './routes/Dashboard';
 import ItemList from './routes/ItemList';
@@ -26,49 +26,10 @@ export default function App() {
     };
   }, []);
 
-  // Prevent WebView swipe gesture navigation (completely disabled)
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let isHorizontalSwipe = false;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      isHorizontalSwipe = false;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const deltaX = currentX - touchStartX;
-      const deltaY = Math.abs(currentY - touchStartY);
-
-      // Detect horizontal swipe (anywhere on screen, not just edges)
-      if (!isHorizontalSwipe && Math.abs(deltaX) > 15 && Math.abs(deltaX) > deltaY * 1.5) {
-        isHorizontalSwipe = true;
-      }
-
-      // Block horizontal swipes completely
-      if (isHorizontalSwipe) {
-        e.preventDefault();
-      }
-    };
-
-    // Capture phase to intercept before WebView handles it
-    document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
-    };
-  }, []);
 
   return (
-    <BrowserRouter>
+    <MemoryRouter>
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<Dashboard />} />
@@ -86,6 +47,6 @@ export default function App() {
           <Route path="/logs" element={<Logs />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </MemoryRouter>
   );
 }

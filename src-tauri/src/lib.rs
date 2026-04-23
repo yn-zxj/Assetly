@@ -30,7 +30,7 @@ mod commands {
     use tauri::command;
     
     #[command]
-    pub fn share_file_android(_app: tauri::AppHandle, file_path: String, mime_type: String, title: String) -> Result<bool, String> {
+    pub fn share_file_android(_app: tauri::AppHandle, _file_path: String, _mime_type: String, _title: String) -> Result<bool, String> {
         // This will be called from the Android side via MainActivity
         // For now, we'll handle it in the frontend using Web Share API
         Ok(false)
