@@ -18,6 +18,22 @@
 
 ---
 
+## 应用截图
+
+<p align="center">
+  <img src="img/home.jpg" width="24%" />
+  <img src="img/goods.jpg" width="24%" />
+  <img src="img/medicine.jpg" width="24%" />
+  <img src="img/statistics.jpg" width="24%" />
+</p>
+<p align="center">
+  <img src="img/settings.jpg" width="24%" />
+  <img src="img/logs.jpg" width="24%" />
+  <img src="img/tips.jpg" width="24%" />
+</p>
+
+---
+
 ## 功能特性
 
 ### 物品管理
