@@ -22,6 +22,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Sync version from tag
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="0.0.0"
+          fi
+          echo "Syncing version to $VERSION"
+          sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
+          sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json
+          cat src-tauri/tauri.conf.json | head -5
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -82,6 +98,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Sync version from tag
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="0.0.0"
+          fi
+          echo "Syncing version to $VERSION"
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -147,6 +178,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Sync version from tag
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="0.0.0"
+          fi
+          echo "Syncing version to $VERSION"
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -215,12 +261,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Rename APK
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+            VERSION="${VERSION#v}"
+          fi
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' -type f | head -1)
+          if [ -n "$APK" ]; then
+            APK_DIR=$(dirname "$APK")
+            cp "$APK" "$APK_DIR/Assetly_${VERSION}_aarch64.apk"
+            echo "Renamed: $APK -> Assetly_${VERSION}_aarch64.apk"
+          fi
+
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-build
           path: |
-            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+            src-tauri/gen/android/app/build/outputs/apk/**/Assetly_*.apk
 
   # 创建 Release
   create-release:

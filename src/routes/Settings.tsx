@@ -266,7 +266,7 @@ export default function Settings() {
         </div>
         <div className="text-sm text-gray-500 space-y-1">
           <p>Assetly - 家庭物品管家</p>
-          <p>版本 0.1.0</p>
+          <p>版本 {__APP_VERSION__}</p>
           <p className="text-xs text-muted mt-2">基于 Tauri 2.0 构建，数据本地存储，隐私安全</p>
         </div>
       </div>
