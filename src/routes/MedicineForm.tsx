@@ -15,7 +15,7 @@ const defaultForm: MedicineFormData = {
   name: '', description: '', category_id: '', location_id: '',
   purchase_date: '', purchase_price: 0, quantity: 1, image_path: '', icon: '',
   medicine_type: 'internal', expiry_date: '', dosage_instructions: '',
-  remaining_quantity: 0, unit: '片', manufacturer: '',
+  remaining_quantity: 1, unit: '片', manufacturer: '',
   is_taking: false, frequency_type: 'daily', frequency_days: 1,
   week_days: '', time_slots: '', duration_start: '', duration_end: '',
 };
@@ -169,6 +169,10 @@ export default function MedicineForm() {
                   { value: 'internal', label: '内服' },
                   { value: 'external', label: '外用' },
                   { value: 'emergency', label: '急救' },
+                  { value: 'injection', label: '注射' },
+                  { value: 'inhalation', label: '吸入' },
+                  { value: 'ophthalmic', label: '眼用' },
+                  { value: 'topical', label: '外用膏贴' },
                 ]}
                 placeholder="选择类型"
               />
@@ -206,7 +210,16 @@ export default function MedicineForm() {
                   { value: '支', label: '支' },
                   { value: '瓶', label: '瓶' },
                   { value: '盒', label: '盒' },
-                  { value: 'ml', label: 'ml' },
+                  { value: '袋', label: '袋' },
+                  { value: '包', label: '包' },
+                  { value: '条', label: '条' },
+                  { value: '贴', label: '贴' },
+                  { value: '枚', label: '枚' },
+                  { value: '滴', label: '滴' },
+                  { value: '喷', label: '喷' },
+                  { value: 'g', label: '克(g)' },
+                  { value: 'mg', label: '毫克(mg)' },
+                  { value: 'ml', label: '毫升(ml)' },
                 ]}
                 placeholder="选择单位"
               />

@@ -1,6 +1,6 @@
 // Medicine types
 
-export type MedicineType = 'internal' | 'external' | 'emergency';
+export type MedicineType = 'internal' | 'external' | 'emergency' | 'injection' | 'inhalation' | 'ophthalmic' | 'topical';
 export type ExpiryStatus = 'safe' | 'warning' | 'expired';
 export type FrequencyType = 'daily' | 'every_n_days' | 'weekly';
 

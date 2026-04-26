@@ -17,6 +17,10 @@ export const MEDICINE_TYPE_LABELS: Record<string, string> = {
   internal: '内服',
   external: '外用',
   emergency: '急救',
+  injection: '注射',
+  inhalation: '吸入',
+  ophthalmic: '眼用',
+  topical: '外用膏贴',
 };
 
 // Item status labels

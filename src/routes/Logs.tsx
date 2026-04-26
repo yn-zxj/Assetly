@@ -103,7 +103,7 @@ export default function Logs() {
       {/* Log list */}
       <div
         ref={scrollRef}
-        className="bg-white rounded-[20px] border border-border/50 overflow-hidden"
+        className="bg-white rounded-[20px] border border-border/50 overflow-y-auto"
         style={{ maxHeight: 'calc(100vh - 220px)' }}
       >
         {filteredLogs.length === 0 ? (

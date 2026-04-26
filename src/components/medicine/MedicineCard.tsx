@@ -64,7 +64,7 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center shrink-0 relative">
           <Pill className="w-6 h-6 text-green-500" />
-          {medicine.is_taking && (
+          {!!medicine.is_taking && (
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
               <Bell className="w-3 h-3 text-white" />
             </div>
@@ -80,14 +80,14 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
             <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">
               {MEDICINE_TYPE_LABELS[medicine.medicine_type]}
             </span>
-            {medicine.is_taking && (
+            {!!medicine.is_taking && (
               <span className="text-xs px-2 py-0.5 bg-green-50 text-green-600 rounded-full">
                 正在服用
               </span>
             )}
           </div>
 
-          {medicine.is_taking && (frequencyDisplay || timeSlotsDisplay) && (
+          {!!medicine.is_taking && (frequencyDisplay || timeSlotsDisplay) && (
             <>
               <p className="text-xs text-gray-500 mb-1">
                 {frequencyDisplay}{frequencyDisplay && timeSlotsDisplay ? ' ' : ''}{timeSlotsDisplay}
@@ -119,7 +119,7 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
           {/* Quick quantity controls */}
           <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50">
             <span className="text-xs text-muted">
-              库存 {medicine.remaining_quantity} {medicine.unit}
+              库存 {medicine.remaining_quantity > 0 ? medicine.remaining_quantity : medicine.quantity} {medicine.unit}
             </span>
             {onUpdateQuantity && (
               <div className="flex items-center gap-1">

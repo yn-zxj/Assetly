@@ -13,6 +13,10 @@ const tabs: { key: MedicineType | 'all'; label: string }[] = [
   { key: 'internal', label: '内服' },
   { key: 'external', label: '外用' },
   { key: 'emergency', label: '急救' },
+  { key: 'injection', label: '注射' },
+  { key: 'inhalation', label: '吸入' },
+  { key: 'ophthalmic', label: '眼用' },
+  { key: 'topical', label: '外用膏贴' },
 ];
 
 export default function MedicineBox() {
@@ -67,12 +71,12 @@ export default function MedicineBox() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 bg-gray-100 rounded-[12px] p-1">
+      <div className="flex gap-1 mb-4 bg-gray-100 rounded-[12px] p-1 overflow-x-auto scrollbar-none">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 py-2 rounded-[10px] text-sm font-medium transition-colors ${
+            className={`shrink-0 py-2 px-3 rounded-[10px] text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.key
                 ? 'bg-white text-primary shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
