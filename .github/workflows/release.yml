@@ -251,15 +251,42 @@ jobs:
             src-tauri/target
           key: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Decode Android keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "❌ ANDROID_KEYSTORE_BASE64 未配置，无法产出签名一致的 APK"
+            exit 1
+          fi
+          mkdir -p src-tauri/gen/android
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > src-tauri/gen/android/release.jks
+          echo "ANDROID_KEYSTORE_FILE=$PWD/src-tauri/gen/android/release.jks" >> $GITHUB_ENV
+
       - name: Build Android APK
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd src-tauri
           cargo install tauri-cli --version "^2"
           cd ..
           pnpm tauri android init
+          # tauri android init 可能覆盖自定义的 build.gradle.kts（包含签名配置），从 git 恢复
+          git checkout -- src-tauri/gen/android/app/build.gradle.kts
           pnpm tauri android build --apk --target aarch64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify APK signature
+        run: |
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' -type f | head -1)
+          if [ -z "$APK" ]; then
+            echo "❌ 未找到 APK"
+            exit 1
+          fi
+          BUILD_TOOLS=$(ls -d "$ANDROID_SDK_ROOT"/build-tools/*/ | sort -V | tail -n1)
+          "${BUILD_TOOLS}apksigner" verify --print-certs "$APK" | grep -E 'Signer|SHA-256' || true
 
       - name: Rename APK
         run: |

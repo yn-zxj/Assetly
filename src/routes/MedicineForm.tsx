@@ -53,7 +53,7 @@ export default function MedicineForm() {
             dosage_instructions: med.dosage_instructions,
             remaining_quantity: med.remaining_quantity,
             unit: med.unit, manufacturer: med.manufacturer,
-            is_taking: med.is_taking, frequency_type: med.frequency_type,
+            is_taking: Boolean(med.is_taking), frequency_type: med.frequency_type,
             frequency_days: med.frequency_days, week_days: med.week_days,
             time_slots: med.time_slots, duration_start: med.duration_start,
             duration_end: med.duration_end,
@@ -282,7 +282,7 @@ export default function MedicineForm() {
             </button>
           </div>
 
-          {form.is_taking && (
+          {!!form.is_taking && (
             <>
               {/* Frequency Type */}
               <div>
