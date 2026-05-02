@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Trash2, Bell, Plus, X } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Save, Trash2, Bell, Plus, X, Sparkles } from 'lucide-react';
 import { useMedicineStore } from '../stores/useMedicineStore';
 import { useItemStore } from '../stores/useItemStore';
 import { getMedicineByItemId } from '../services/medicineService';
@@ -33,12 +33,15 @@ const WEEK_DAYS = [
 export default function MedicineForm() {
   const navigate = useNavigate();
   const { id: itemId } = useParams();
+  const [searchParams] = useSearchParams();
   const isEdit = Boolean(itemId);
+  const isAI = searchParams.get('ai') === '1';
   const { addMedicine, updateMedicine } = useMedicineStore();
   const { deleteItem } = useItemStore();
   const [form, setForm] = useState<MedicineFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [aiFilled, setAiFilled] = useState(false);
 
   useEffect(() => {
     if (isEdit && itemId) {
@@ -60,8 +63,31 @@ export default function MedicineForm() {
           });
         }
       });
+    } else if (isAI && searchParams.get('data')) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(atob(searchParams.get('data')!)));
+        setForm((prev) => ({
+          ...prev,
+          name: decoded.name || '',
+          description: decoded.description || '',
+          category_id: decoded.category_id || '',
+          location_id: decoded.location_id || '',
+          purchase_date: decoded.purchase_date || '',
+          purchase_price: Number(decoded.purchase_price || 0),
+          quantity: Number(decoded.quantity || 1),
+          medicine_type: (decoded.medicine_type as MedicineFormData['medicine_type']) || 'internal',
+          expiry_date: decoded.expiry_date || '',
+          dosage_instructions: decoded.dosage_instructions || '',
+          remaining_quantity: Number(decoded.remaining_quantity ?? decoded.quantity ?? 1),
+          unit: decoded.unit || '片',
+          manufacturer: decoded.manufacturer || '',
+        }));
+        setAiFilled(true);
+      } catch {
+        // ignore invalid data
+      }
     }
-  }, [isEdit, itemId]);
+  }, [isEdit, itemId, isAI, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +153,12 @@ export default function MedicineForm() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <h1 className="text-xl font-bold text-gray-800">{isEdit ? '编辑药品' : '添加药品'}</h1>
+          {aiFilled && (
+            <span className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+              <Sparkles className="w-3 h-3" />
+              AI 已预填
+            </span>
+          )}
         </div>
         {isEdit && (
           <button onClick={() => setShowDelete(true)} className="p-2 rounded-[10px] hover:bg-red-50">

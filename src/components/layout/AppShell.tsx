@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Pill, Settings, MapPin,
-  ChevronRight,
+  ChevronRight, Sparkles,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSettingsStore } from '../../stores/useSettingsStore';
 import { getDb } from '../../services/database';
+import AIRecognizeDialog from '../shared/AIRecognizeDialog';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: '首页' },
@@ -24,8 +25,9 @@ const sidebarSubItems = [
 export default function AppShell() {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
-  const { loadSettings, themeColor } = useSettingsStore();
+  const { loadSettings, themeColor, ai_enabled } = useSettingsStore();
   const [dbReady, setDbReady] = useState(false);
+  const [showAIDialog, setShowAIDialog] = useState(false);
 
   // Logs page should highlight Settings nav button
   const isSettingsActive = location.pathname === '/settings' || location.pathname === '/logs';
@@ -125,35 +127,47 @@ export default function AppShell() {
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Nav - Floating Pill */}
+      {/* Mobile Bottom Nav - Floating Pill + FAB */}
       {isMobile && (
         <div
           className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-center px-4 pointer-events-none"
           style={{ paddingBottom: `calc(1.25rem + env(safe-area-inset-bottom, 0px))` }}
         >
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl rounded-full px-2 py-2 shadow-lg shadow-black/8 border border-gray-100 pointer-events-auto">
-            {navItems.map((item) => {
-              const isActive = item.to === '/settings' ? isSettingsActive : location.pathname === item.to;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={() =>
-                    `flex items-center justify-center w-14 h-12 rounded-full transition-all duration-200 ${
-                      isActive
-                        ? 'bg-primary text-white shadow-md shadow-primary/25'
-                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                    }`
-                  }
-                >
-                  <item.icon className="w-5 h-5" />
-                </NavLink>
-              );
-            })}
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl rounded-full px-2 py-2 shadow-lg shadow-black/8 border border-gray-100">
+              {navItems.map((item) => {
+                const isActive = item.to === '/settings' ? isSettingsActive : location.pathname === item.to;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={() =>
+                      `flex items-center justify-center w-14 h-12 rounded-full transition-all duration-200 ${
+                        isActive
+                          ? 'bg-primary text-white shadow-md shadow-primary/25'
+                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                      }`
+                    }
+                  >
+                    <item.icon className="w-5 h-5" />
+                  </NavLink>
+                );
+              })}
+            </div>
+            {ai_enabled && (
+              <button
+                onClick={() => setShowAIDialog(true)}
+                className="w-14 h-14 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:opacity-90 transition-opacity"
+              >
+                <Sparkles className="w-6 h-6" />
+              </button>
+            )}
           </div>
         </div>
       )}
+
+      <AIRecognizeDialog open={showAIDialog} onClose={() => setShowAIDialog(false)} />
     </div>
   );
 }

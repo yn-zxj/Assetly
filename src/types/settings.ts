@@ -22,3 +22,34 @@ export interface MonthlySpending {
   month: string;
   amount: number;
 }
+
+export interface AISettings {
+  ai_enabled: boolean;
+  ai_api_url: string;
+  ai_api_key: string;
+  ai_text_model: string;
+  ai_vision_model: string;
+}
+
+export interface AIRecognitionResult {
+  item_type: 'item' | 'medicine';
+  name: string;
+  description: string;
+  category_id: string;
+  location_id: string;
+  purchase_date: string;
+  purchase_price: number;
+  quantity: number;
+  // item fields
+  warranty_expiry?: string;
+  shelf_life_expiry?: string;
+  // medicine fields
+  medicine_type?: string;
+  expiry_date?: string;
+  dosage_instructions?: string;
+  remaining_quantity?: number;
+  unit?: string;
+  manufacturer?: string;
+  // meta
+  confidence: number;
+}

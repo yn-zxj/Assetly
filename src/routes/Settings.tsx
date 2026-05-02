@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2 } from 'lucide-react';
+import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
@@ -8,13 +8,18 @@ import ConfirmDialog from '../components/shared/ConfirmDialog';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { themeColor, currencySymbol, setThemeColor, setCurrencySymbol } = useSettingsStore();
+  const {
+    themeColor, currencySymbol, setThemeColor, setCurrencySymbol,
+    ai_enabled, ai_api_url, ai_api_key, ai_text_model, ai_vision_model,
+    setAIEnabled, setAIApiUrl, setAIApiKey, setAITextModel, setAIVisionModel,
+  } = useSettingsStore();
   const [exporting, setExporting] = useState(false);
   const [exportMsg, setExportMsg] = useState('');
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState('');
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [pendingImportData, setPendingImportData] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
@@ -256,6 +261,85 @@ export default function Settings() {
           <ScrollText className="w-4 h-4" />
           查看日志
         </button>
+      </div>
+
+      {/* AI Config */}
+      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="text-sm font-semibold text-gray-700">AI 配置</h2>
+        </div>
+
+        {/* AI Enabled Toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <label className="text-sm text-gray-600">启用 AI 识别</label>
+          <button
+            type="button"
+            onClick={() => setAIEnabled(!ai_enabled)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${ai_enabled ? 'bg-primary' : 'bg-gray-300'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${ai_enabled ? 'translate-x-5' : ''}`} />
+          </button>
+        </div>
+
+        {ai_enabled && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
+              <input
+                type="text"
+                value={ai_api_url}
+                onChange={(e) => setAIApiUrl(e.target.value)}
+                placeholder="https://api.openai.com/v1"
+                className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">API Key</label>
+              <div className="relative">
+                <input
+                  type={showApiKey ? 'text' : 'password'}
+                  value={ai_api_key}
+                  onChange={(e) => setAIApiKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                >
+                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">文本模型</label>
+                <input
+                  type="text"
+                  value={ai_text_model}
+                  onChange={(e) => setAITextModel(e.target.value)}
+                  placeholder="gpt-4o-mini"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">图像识别模型</label>
+                <input
+                  type="text"
+                  value={ai_vision_model}
+                  onChange={(e) => setAIVisionModel(e.target.value)}
+                  placeholder="gpt-4o"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              API Key 仅存储在本地，不会上传到任何服务器
+            </p>
+          </div>
+        )}
       </div>
 
       {/* About */}

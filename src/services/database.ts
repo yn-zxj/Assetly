@@ -166,5 +166,15 @@ function getMigrations(): Migration[] {
         `ALTER TABLE locations ADD COLUMN image_path TEXT DEFAULT ''`,
       ],
     },
+    {
+      version: 5,
+      statements: [
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_enabled', 'false', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_api_url', '"https://api.openai.com/v1"', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_api_key', '""', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_text_model', '"gpt-4o-mini"', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_vision_model', '"gpt-4o"', '${now}')`,
+      ],
+    },
   ];
 }

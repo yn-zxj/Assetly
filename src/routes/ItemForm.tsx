@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Save, X, Sparkles } from 'lucide-react';
 import { useItemStore } from '../stores/useItemStore';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { getItemById } from '../services/itemService';
@@ -29,12 +29,15 @@ const defaultForm: ItemFormData = {
 export default function ItemForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
+  const isAI = searchParams.get('ai') === '1';
   const { addItem, updateItem } = useItemStore();
   const { categories, fetchCategories } = useCategoryStore();
   const [form, setForm] = useState<ItemFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [aiFilled, setAiFilled] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -61,8 +64,27 @@ export default function ItemForm() {
           });
         }
       });
+    } else if (isAI && searchParams.get('data')) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(atob(searchParams.get('data')!)));
+        setForm((prev) => ({
+          ...prev,
+          name: decoded.name || '',
+          description: decoded.description || '',
+          category_id: decoded.category_id || '',
+          location_id: decoded.location_id || '',
+          purchase_date: decoded.purchase_date || '',
+          purchase_price: Number(decoded.purchase_price || 0),
+          quantity: Number(decoded.quantity || 1),
+          warranty_expiry: decoded.warranty_expiry || '',
+          shelf_life_expiry: decoded.shelf_life_expiry || '',
+        }));
+        setAiFilled(true);
+      } catch {
+        // ignore invalid data
+      }
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, isAI, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +119,12 @@ export default function ItemForm() {
         <h1 className="text-xl font-bold text-gray-800">
           {isEdit ? '编辑物品' : '添加物品'}
         </h1>
+        {aiFilled && (
+          <span className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+            <Sparkles className="w-3 h-3" />
+            AI 已预填
+          </span>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
