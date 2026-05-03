@@ -1,7 +1,20 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|_app| {
+            // 开发阶段自动弹出 WebView DevTools，方便在 Network 面板查看请求
+            // 参考：https://v2.tauri.app/zh-cn/develop/debug/application/
+            #[cfg(debug_assertions)]
+            {
+                use tauri::Manager;
+                if let Some(window) = _app.get_webview_window("main") {
+                    window.open_devtools();
+                }
+            }
+            Ok(())
+        })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())

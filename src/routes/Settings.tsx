@@ -1,17 +1,21 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
 import { THEME_PRESETS, CURRENCY_OPTIONS } from '../utils/constants';
+import { ChatOpenAI } from '@langchain/openai';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
+import { getHttpFetch } from '../services/httpFetch';
 
 export default function Settings() {
   const navigate = useNavigate();
   const {
     themeColor, currencySymbol, setThemeColor, setCurrencySymbol,
-    ai_enabled, ai_api_url, ai_api_key, ai_text_model, ai_vision_model,
-    setAIEnabled, setAIApiUrl, setAIApiKey, setAITextModel, setAIVisionModel,
+    ai_enabled, ai_api_url, ai_api_key, ai_model_mode, ai_text_model,
+    ai_vision_api_url, ai_vision_api_key, ai_vision_model,
+    setAIEnabled, setAIApiUrl, setAIApiKey, setAIModelMode, setAITextModel,
+    setAIVisionApiUrl, setAIVisionApiKey, setAIVisionModel,
   } = useSettingsStore();
   const [exporting, setExporting] = useState(false);
   const [exportMsg, setExportMsg] = useState('');
@@ -20,6 +24,8 @@ export default function Settings() {
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [pendingImportData, setPendingImportData] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testMsg, setTestMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
@@ -117,6 +123,57 @@ export default function Settings() {
     }
   };
 
+  const testOneModel = async (
+    label: string,
+    modelName: string,
+    apiKey: string,
+    baseURL: string,
+  ): Promise<string> => {
+    if (!apiKey) return `${label}失败: 未填写 API Key`;
+    if (!modelName) return `${label}失败: 未填写模型名称`;
+    if (!baseURL) return `${label}失败: 未填写 Base URL`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const model = new ChatOpenAI({
+        model: modelName,
+        apiKey,
+        configuration: { baseURL, fetch: getHttpFetch() },
+        temperature: 1,
+        maxTokens: 10,
+        timeout: 20000,
+        maxRetries: 0,
+      });
+      await model.invoke('hi', { signal: controller.signal });
+      return `${label}成功`;
+    } catch (err) {
+      const e = err as Error;
+      const msg = e.name === 'AbortError' ? '请求超时' : e.message;
+      return `${label}失败: ${msg}`;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestLoading(true);
+    setTestMsg('');
+    try {
+      if (ai_model_mode === 'separate') {
+        const [textResult, visionResult] = await Promise.all([
+          testOneModel('文本模型', ai_text_model, ai_api_key, ai_api_url),
+          testOneModel('图像模型', ai_vision_model, ai_vision_api_key, ai_vision_api_url),
+        ]);
+        setTestMsg(`${textResult}\n${visionResult}`);
+      } else {
+        const result = await testOneModel('连接', ai_text_model, ai_api_key, ai_api_url);
+        setTestMsg(result);
+      }
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   const handleImportConfirm = async () => {
     setShowImportConfirm(false);
     setImporting(true);
@@ -153,7 +210,7 @@ export default function Settings() {
             <button
               key={preset.color}
               onClick={() => setThemeColor(preset.color)}
-              className={`flex flex-col items-center gap-1.5 p-2 rounded-[12px] transition-colors ${
+              className={`flex-1 min-w-[3.5rem] max-w-[4.5rem] flex flex-col items-center gap-1.5 p-2 rounded-[12px] transition-colors ${
                 themeColor === preset.color ? 'bg-gray-100' : 'hover:bg-gray-50'
               }`}
             >
@@ -284,38 +341,74 @@ export default function Settings() {
 
         {ai_enabled && (
           <div className="space-y-3">
+            {/* Model Mode */}
             <div>
-              <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
-              <input
-                type="text"
-                value={ai_api_url}
-                onChange={(e) => setAIApiUrl(e.target.value)}
-                placeholder="https://api.openai.com/v1"
-                className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">API Key</label>
-              <div className="relative">
-                <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value={ai_api_key}
-                  onChange={(e) => setAIApiKey(e.target.value)}
-                  placeholder="sk-..."
-                  className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
-                />
+              <label className="block text-xs text-gray-500 mb-2">模型配置模式</label>
+              <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  onClick={() => setAIModelMode('single')}
+                  className={`flex-1 py-2 rounded-[10px] text-xs font-medium transition-colors ${
+                    ai_model_mode === 'single'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-50 text-gray-600 border border-border hover:bg-gray-100'
+                  }`}
                 >
-                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  多模态
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAIModelMode('separate')}
+                  className={`flex-1 py-2 rounded-[10px] text-xs font-medium transition-colors ${
+                    ai_model_mode === 'separate'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-50 text-gray-600 border border-border hover:bg-gray-100'
+                  }`}
+                >
+                  单模型
                 </button>
               </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {ai_model_mode === 'single'
+                  ? '文字和图片使用同一个模型（如 gpt-4o）'
+                  : '文字和图片可使用不同厂商的模型和密钥'}
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            {/* Text Model Config */}
+            <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
+              <p className="text-xs font-medium text-gray-700">文本模型配置</p>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">文本模型</label>
+                <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
+                <input
+                  type="text"
+                  value={ai_api_url}
+                  onChange={(e) => setAIApiUrl(e.target.value)}
+                  placeholder="https://api.openai.com/v1"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">API Key</label>
+                <div className="relative">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={ai_api_key}
+                    onChange={(e) => setAIApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  >
+                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">模型名称</label>
                 <input
                   type="text"
                   value={ai_text_model}
@@ -324,17 +417,80 @@ export default function Settings() {
                   className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">图像识别模型</label>
-                <input
-                  type="text"
-                  value={ai_vision_model}
-                  onChange={(e) => setAIVisionModel(e.target.value)}
-                  placeholder="gpt-4o"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
-                />
-              </div>
             </div>
+
+            {/* Vision Model Config (separate mode) */}
+            {ai_model_mode === 'separate' && (
+              <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
+                <p className="text-xs font-medium text-gray-700">图像识别模型配置</p>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
+                  <input
+                    type="text"
+                    value={ai_vision_api_url}
+                    onChange={(e) => setAIVisionApiUrl(e.target.value)}
+                    placeholder="https://api.openai.com/v1"
+                    className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">API Key</label>
+                  <div className="relative">
+                    <input
+                      type={showApiKey ? 'text' : 'password'}
+                      value={ai_vision_api_key}
+                      onChange={(e) => setAIVisionApiKey(e.target.value)}
+                      placeholder="sk-..."
+                      className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                    >
+                      {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">模型名称</label>
+                  <input
+                    type="text"
+                    value={ai_vision_model}
+                    onChange={(e) => setAIVisionModel(e.target.value)}
+                    placeholder="gpt-4o"
+                    className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Test Connection */}
+            <button
+              onClick={handleTestConnection}
+              disabled={
+                testLoading ||
+                !ai_api_key ||
+                (ai_model_mode === 'separate' && !ai_vision_api_key)
+              }
+              className="w-full flex items-center justify-center gap-2 py-2.5 border border-primary/30 bg-primary/5 rounded-[12px] text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+            >
+              {testLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {testLoading ? '测试中...' : ai_model_mode === 'separate' ? '测试连接（文本 + 图像）' : '测试连接'}
+            </button>
+            {testMsg && (
+              <div className="space-y-1">
+                {testMsg.split('\n').map((line, idx) => (
+                  <p
+                    key={idx}
+                    className={`text-xs ${line.includes('成功') ? 'text-green-600' : 'text-red-500'}`}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+            )}
+
             <p className="text-xs text-gray-400">
               API Key 仅存储在本地，不会上传到任何服务器
             </p>

@@ -25,9 +25,14 @@ export interface MonthlySpending {
 
 export interface AISettings {
   ai_enabled: boolean;
+  ai_model_mode: 'single' | 'separate';
+  // Text model config
   ai_api_url: string;
   ai_api_key: string;
   ai_text_model: string;
+  // Vision model config (used when ai_model_mode === 'separate')
+  ai_vision_api_url: string;
+  ai_vision_api_key: string;
   ai_vision_model: string;
 }
 

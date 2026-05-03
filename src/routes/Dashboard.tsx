@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Plus, Pill, BarChart3, AlertTriangle, TrendingUp, ArrowRight, Clock } from 'lucide-react';
+import { Package, Plus, Pill, BarChart3, AlertTriangle, TrendingUp, ArrowRight, Clock, Sparkles } from 'lucide-react';
 import { useDashboardStore } from '../stores/useDashboardStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { formatCurrency } from '../utils/currencyHelper';
@@ -8,13 +8,15 @@ import { getExpiryStatus } from '../utils/dateHelper';
 import ExpiryBadge from '../components/medicine/ExpiryBadge';
 import { getTakingMedicines } from '../services/medicineService';
 import { PieChartComponent as PieChart } from '../components/charts/PieChart';
+import AIRecognizeDialog from '../components/shared/AIRecognizeDialog';
 import type { MedicineWithItem } from '../types/medicine';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { stats, categoryDistribution, expiringMedicines, loading, fetchDashboardData } = useDashboardStore();
-  const { currencySymbol } = useSettingsStore();
+  const { currencySymbol, ai_enabled } = useSettingsStore();
   const [takingMedicines, setTakingMedicines] = useState<MedicineWithItem[]>([]);
+  const [showAIDialog, setShowAIDialog] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -78,7 +80,18 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className={`grid gap-3 mb-6 ${ai_enabled ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'}`}>
+        {ai_enabled && (
+          <button
+            onClick={() => setShowAIDialog(true)}
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-purple-500" />
+            </div>
+            <span className="text-xs font-medium text-gray-600">AI 识别</span>
+          </button>
+        )}
         <button
           onClick={() => navigate('/items/new')}
           className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
@@ -212,6 +225,8 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      <AIRecognizeDialog open={showAIDialog} onClose={() => setShowAIDialog(false)} />
     </div>
   );
 }

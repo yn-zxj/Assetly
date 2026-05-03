@@ -11,9 +11,12 @@ interface SettingsState extends AISettings {
   setThemeColor: (color: string) => Promise<void>;
   setCurrencySymbol: (symbol: string) => Promise<void>;
   setAIEnabled: (enabled: boolean) => Promise<void>;
+  setAIModelMode: (mode: 'single' | 'separate') => Promise<void>;
   setAIApiUrl: (url: string) => Promise<void>;
   setAIApiKey: (key: string) => Promise<void>;
   setAITextModel: (model: string) => Promise<void>;
+  setAIVisionApiUrl: (url: string) => Promise<void>;
+  setAIVisionApiKey: (key: string) => Promise<void>;
   setAIVisionModel: (model: string) => Promise<void>;
 }
 
@@ -21,9 +24,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   themeColor: '#22C55E',
   currencySymbol: '¥',
   ai_enabled: false,
+  ai_model_mode: 'single',
   ai_api_url: 'https://api.openai.com/v1',
   ai_api_key: '',
   ai_text_model: 'gpt-4o-mini',
+  ai_vision_api_url: 'https://api.openai.com/v1',
+  ai_vision_api_key: '',
   ai_vision_model: 'gpt-4o',
   loaded: false,
 
@@ -42,9 +48,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       themeColor: settings.theme_color || '#22C55E',
       currencySymbol: settings.currency_symbol || '¥',
       ai_enabled: String(settings.ai_enabled) === 'true',
+      ai_model_mode: settings.ai_model_mode === 'separate' ? 'separate' : 'single',
       ai_api_url: settings.ai_api_url || 'https://api.openai.com/v1',
       ai_api_key: settings.ai_api_key || '',
       ai_text_model: settings.ai_text_model || 'gpt-4o-mini',
+      ai_vision_api_url: settings.ai_vision_api_url || 'https://api.openai.com/v1',
+      ai_vision_api_key: settings.ai_vision_api_key || '',
       ai_vision_model: settings.ai_vision_model || 'gpt-4o',
       loaded: true,
     });
@@ -103,6 +112,33 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       [JSON.stringify(model), getNow()]
     );
     set({ ai_text_model: model });
+  },
+
+  setAIModelMode: async (mode: 'single' | 'separate') => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('ai_model_mode', $1, $2)",
+      [JSON.stringify(mode), getNow()]
+    );
+    set({ ai_model_mode: mode });
+  },
+
+  setAIVisionApiUrl: async (url: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('ai_vision_api_url', $1, $2)",
+      [JSON.stringify(url), getNow()]
+    );
+    set({ ai_vision_api_url: url });
+  },
+
+  setAIVisionApiKey: async (key: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('ai_vision_api_key', $1, $2)",
+      [JSON.stringify(key), getNow()]
+    );
+    set({ ai_vision_api_key: key });
   },
 
   setAIVisionModel: async (model: string) => {

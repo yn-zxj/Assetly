@@ -37,6 +37,9 @@ export const THEME_PRESETS = [
   { name: '珊瑚橙', color: '#F97316' },
   { name: '薰衣紫', color: '#A855F7' },
   { name: '玫瑰粉', color: '#EC4899' },
+  { name: '经典红', color: '#EF4444' },
+  { name: '深海青', color: '#14B8A6' },
+  { name: '石墨灰', color: '#4B5563' },
 ];
 
 // Currency symbols

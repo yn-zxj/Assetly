@@ -3,16 +3,23 @@ import { getNow } from '../utils/dateHelper';
 import { DEFAULT_CATEGORIES } from '../utils/constants';
 import { logInfo, logError, logDebug } from '../utils/logger';
 
-let db: Database | null = null;
+let dbPromise: Promise<Database> | null = null;
 
 export async function getDb(): Promise<Database> {
-  if (!db) {
-    logInfo('正在连接数据库...', 'Database');
-    db = await Database.load('sqlite:assetly.db');
-    logInfo('数据库连接成功', 'Database');
-    await runMigrations(db);
+  if (!dbPromise) {
+    dbPromise = (async () => {
+      logInfo('正在连接数据库...', 'Database');
+      const instance = await Database.load('sqlite:assetly.db');
+      logInfo('数据库连接成功', 'Database');
+      await runMigrations(instance);
+      return instance;
+    })().catch((err) => {
+      // 失败后清空缓存，允许下次重试
+      dbPromise = null;
+      throw err;
+    });
   }
-  return db;
+  return dbPromise;
 }
 
 async function runMigrations(database: Database): Promise<void> {
@@ -170,9 +177,12 @@ function getMigrations(): Migration[] {
       version: 5,
       statements: [
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_enabled', 'false', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_model_mode', '"single"', '${now}')`,
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_api_url', '"https://api.openai.com/v1"', '${now}')`,
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_api_key', '""', '${now}')`,
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_text_model', '"gpt-4o-mini"', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_vision_api_url', '"https://api.openai.com/v1"', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_vision_api_key', '""', '${now}')`,
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_vision_model', '"gpt-4o"', '${now}')`,
       ],
     },

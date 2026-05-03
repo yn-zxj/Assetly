@@ -102,8 +102,9 @@ export async function checkAndNotify() {
 export function startMedicationReminder() {
   logInfo('启动用药提醒定时器 (每60秒检查一次)', 'MedicationReminder');
 
-  // Register notification action types for Android
-  try {
+  // Register notification action types (mobile only; desktop webview does not implement this command)
+  const isMobilePlatform = /android|iphone|ipad/i.test(navigator.userAgent);
+  if (isMobilePlatform) {
     registerActionTypes([
       {
         id: 'medication',
@@ -112,10 +113,11 @@ export function startMedicationReminder() {
           { id: 'snooze', title: '稍后提醒' },
         ],
       },
-    ]);
-    logInfo('通知 action types 注册成功', 'MedicationReminder');
-  } catch (err) {
-    logWarn(`通知 action types 注册失败: ${(err as Error).message}`, 'MedicationReminder');
+    ])
+      .then(() => logInfo('通知 action types 注册成功', 'MedicationReminder'))
+      .catch((err) => logWarn(`通知 action types 注册失败: ${(err as Error).message}`, 'MedicationReminder'));
+  } else {
+    logInfo('非移动平台，跳过 action types 注册', 'MedicationReminder');
   }
 
   // Check every minute

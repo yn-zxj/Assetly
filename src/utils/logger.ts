@@ -1,27 +1,15 @@
-import { info, error, warn, debug, trace } from '@tauri-apps/plugin-log';
+import { info, error, warn, debug } from '@tauri-apps/plugin-log';
 
 /**
- * Forward console logs to Tauri log plugin.
- * Call this once at app startup.
+ * Initialize logger.
+ *
+ * 注意：早期版本在这里 hook 了 console.*，将所有 console 输出转发到 Tauri log。
+ * 但 tauri-plugin-log 默认的 Webview target 会将 Rust 侧日志反向打到 webview 的 console，
+ * 造成每条 logInfo/logError 在终端和 webview console 重复打印一次。
+ * 所以我们不再 hook console，统一通过 logInfo/logError 函数调用 Tauri log。
  */
 export function initLogger() {
-  const forwardConsole = (
-    fnName: 'log' | 'debug' | 'info' | 'warn' | 'error',
-    logger: (message: string) => Promise<void>
-  ) => {
-    const original = console[fnName];
-    console[fnName] = (...args: unknown[]) => {
-      original(...args);
-      const message = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
-      logger(message).catch(() => {});
-    };
-  };
-
-  forwardConsole('log', trace);
-  forwardConsole('debug', debug);
-  forwardConsole('info', info);
-  forwardConsole('warn', warn);
-  forwardConsole('error', error);
+  // no-op：不再拦截 console，避免与 plugin-log 的 Webview target 形成回环重复。
 }
 
 /**
