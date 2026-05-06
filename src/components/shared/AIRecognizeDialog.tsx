@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Type, Image, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { useSettingsStore } from '../../stores/useSettingsStore';
@@ -22,7 +22,29 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [streamText, setStreamText] = useState('');
+  const [elapsed, setElapsed] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamBoxRef = useRef<HTMLDivElement>(null);
+  const startAtRef = useRef<number>(0);
+
+  // loading 时每 100ms 刷新耗时
+  useEffect(() => {
+    if (!loading) return;
+    startAtRef.current = Date.now();
+    setElapsed(0);
+    const timer = setInterval(() => {
+      setElapsed(Date.now() - startAtRef.current);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [loading]);
+
+  // 流内容更新时自动滚到底
+  useEffect(() => {
+    if (streamBoxRef.current) {
+      streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight;
+    }
+  }, [streamText]);
 
   const reset = useCallback(() => {
     setMode('select');
@@ -30,6 +52,8 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
     setImagePreview('');
     setLoading(false);
     setError('');
+    setStreamText('');
+    setElapsed(0);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -41,8 +65,11 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
     if (!text.trim()) return;
     setLoading(true);
     setError('');
+    setStreamText('');
     try {
-      const result = await recognizeByText(text.trim(), settings);
+      const result = await recognizeByText(text.trim(), settings, (partial) => {
+        setStreamText(partial);
+      });
       handleResult(result);
     } catch (err) {
       setError((err as Error).message || '识别失败，请重试');
@@ -55,8 +82,11 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
     if (!imagePreview) return;
     setLoading(true);
     setError('');
+    setStreamText('');
     try {
-      const result = await recognizeByImage(imagePreview, settings);
+      const result = await recognizeByImage(imagePreview, settings, (partial) => {
+        setStreamText(partial);
+      });
       handleResult(result);
     } catch (err) {
       setError((err as Error).message || '识别失败，请重试');
@@ -245,6 +275,27 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
             <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 rounded-[12px] text-red-600 text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
+            </div>
+          )}
+
+          {loading && (mode === 'text' || mode === 'image') && (
+            <div className="mt-4 rounded-[12px] border border-border bg-gray-50 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 text-xs text-gray-500 border-b border-border/60 bg-white">
+                <div className="flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  <span>AI 正在输出</span>
+                  <span className="text-gray-400">· {(elapsed / 1000).toFixed(1)}s</span>
+                  {streamText && (
+                    <span className="text-gray-400">· {streamText.length} 字符</span>
+                  )}
+                </div>
+              </div>
+              <div
+                ref={streamBoxRef}
+                className="px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre-wrap break-words max-h-40 overflow-y-auto"
+              >
+                {streamText || <span className="text-gray-400">等待模型响应…</span>}
+              </div>
             </div>
           )}
         </div>

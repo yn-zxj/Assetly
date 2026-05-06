@@ -1,8 +1,6 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { invoke, Channel } from '@tauri-apps/api/core';
 import type { AISettings, AIRecognitionResult } from '../types/settings';
 import { logInfo, logError } from '../utils/logger';
-import { getHttpFetch } from './httpFetch';
 
 const SYSTEM_PROMPT = `你是一个家庭物品管理助手。用户会提供物品的文字描述或图片，你需要识别物品信息并判断它是普通物品还是药品。
 
@@ -36,7 +34,7 @@ const SYSTEM_PROMPT = `你是一个家庭物品管理助手。用户会提供物
 5. 日期格式必须是 YYYY-MM-DD
 6. 只返回纯 JSON，不要 markdown 代码块，不要额外解释`;
 
-function createModel(settings: AISettings, isVision = false) {
+function resolveConfig(settings: AISettings, isVision: boolean) {
   const isSeparate = settings.ai_model_mode === 'separate';
   const modelName = isVision && isSeparate
     ? settings.ai_vision_model
@@ -44,19 +42,10 @@ function createModel(settings: AISettings, isVision = false) {
   const apiKey = isVision && isSeparate
     ? settings.ai_vision_api_key
     : settings.ai_api_key;
-  const baseURL = isVision && isSeparate
+  const baseURL = (isVision && isSeparate
     ? settings.ai_vision_api_url
-    : settings.ai_api_url;
-  return new ChatOpenAI({
-    model: modelName,
-    apiKey: apiKey,
-    configuration: { baseURL, fetch: getHttpFetch() },
-    temperature: 1,
-    maxTokens: 4096,
-    timeout: 300000,
-    maxRetries: 0,
-    streaming: true,
-  });
+    : settings.ai_api_url) || '';
+  return { modelName, apiKey, baseURL };
 }
 
 function describeError(err: unknown): string {
@@ -83,29 +72,99 @@ function describeError(err: unknown): string {
   return parts.join(' | ') || String(err);
 }
 
-async function streamInvoke(
-  model: ChatOpenAI,
+type StreamEvent =
+  | { type: 'start'; status: number }
+  | { type: 'chunk'; data: string }
+  | { type: 'error'; message: string }
+  | { type: 'done' };
+
+/**
+ * 通过 Rust 侧 `ai_chat_stream` command 调用 OpenAI 兼容的 chat completions。
+ *
+ * 背景：@tauri-apps/plugin-http 的 fetch 会一次性读完整个 body，导致 SSE
+ * 在前端无法真正流式。这里直接走 Rust reqwest + Tauri Channel，
+ * 每个 TCP chunk 实时推送到前端，前端解析 SSE 后调 onDelta。
+ */
+async function streamChatCompletion(
+  settings: AISettings,
+  isVision: boolean,
   messages: any[],
   onFirstChunk?: () => void,
+  onDelta?: (delta: string, total: string) => void,
 ): Promise<string> {
-  const stream = await model.stream(messages);
+  const { modelName, apiKey, baseURL } = resolveConfig(settings, isVision);
+  if (!baseURL) throw new Error('缺少 API Base URL');
+  if (!modelName) throw new Error('缺少模型名称');
+
+  const url = baseURL.replace(/\/+$/, '') + '/chat/completions';
+  const body = {
+    model: modelName,
+    messages,
+    stream: true,
+    temperature: 1,
+    max_tokens: 4096,
+  };
+
+  const channel = new Channel<StreamEvent>();
+  let sseBuffer = '';
   let content = '';
-  let first = true;
-  for await (const chunk of stream as AsyncIterable<any>) {
-    if (first) {
-      first = false;
-      onFirstChunk?.();
-    }
-    const part = chunk?.content;
-    if (typeof part === 'string') {
-      content += part;
-    } else if (Array.isArray(part)) {
-      for (const p of part) {
-        if (typeof p === 'string') content += p;
-        else if (p?.text) content += p.text;
+  let chunkCount = 0;
+  let firstFired = false;
+  let lastLogAt = 0;
+  let streamError: string | null = null;
+
+  logInfo(`SSE 请求 POST ${url} (model=${modelName})`, 'AIService');
+
+  await new Promise<void>((resolve, reject) => {
+    channel.onmessage = (evt) => {
+      if (evt.type === 'chunk') {
+        sseBuffer += evt.data;
+        let idx: number;
+        while ((idx = sseBuffer.indexOf('\n\n')) !== -1) {
+          const rawEvent = sseBuffer.slice(0, idx);
+          sseBuffer = sseBuffer.slice(idx + 2);
+          for (const line of rawEvent.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const data = trimmed.slice(5).trim();
+            if (!data || data === '[DONE]') continue;
+            try {
+              const j = JSON.parse(data);
+              const delta: string = j?.choices?.[0]?.delta?.content || '';
+              if (!delta) continue;
+              if (!firstFired) {
+                firstFired = true;
+                onFirstChunk?.();
+              }
+              content += delta;
+              chunkCount += 1;
+              onDelta?.(delta, content);
+              const now = Date.now();
+              if (now - lastLogAt > 500) {
+                lastLogAt = now;
+                logInfo(
+                  `流式进度: chunks=${chunkCount}, total=${content.length}字符, 最新：${JSON.stringify(delta.slice(0, 60))}`,
+                  'AIService',
+                );
+              }
+            } catch {
+              /* 忽略 keep-alive / 非 JSON 行 */
+            }
+          }
+        }
+      } else if (evt.type === 'error') {
+        streamError = evt.message || 'stream error';
+      } else if (evt.type === 'done') {
+        resolve();
+      } else if (evt.type === 'start') {
+        logInfo(`SSE 连接建立 (status=${evt.status})`, 'AIService');
       }
-    }
-  }
+    };
+    invoke('ai_chat_stream', { url, apiKey, body, onEvent: channel }).catch(reject);
+  });
+
+  logInfo(`流式结束: chunks=${chunkCount}, total=${content.length}字符`, 'AIService');
+  if (streamError) throw new Error(streamError);
   return content;
 }
 
@@ -140,7 +199,8 @@ function parseResult(content: string): AIRecognitionResult {
 
 export async function recognizeByText(
   text: string,
-  settings: AISettings
+  settings: AISettings,
+  onProgress?: (partial: string) => void,
 ): Promise<AIRecognitionResult> {
   if (!settings.ai_api_key) {
     throw new Error('请先配置 API Key');
@@ -149,13 +209,17 @@ export async function recognizeByText(
   logInfo('开始文字识别', 'AIService');
   const t0 = Date.now();
 
-  const model = createModel(settings, false);
   let content = '';
   try {
-    content = await streamInvoke(
-      model,
-      [new SystemMessage(SYSTEM_PROMPT), new HumanMessage(text)],
+    content = await streamChatCompletion(
+      settings,
+      false,
+      [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: text },
+      ],
       () => logInfo(`文字识别首包到达(${Date.now() - t0}ms)`, 'AIService'),
+      onProgress ? (_d, total) => onProgress(total) : undefined,
     );
   } catch (err) {
     const detail = describeError(err);
@@ -176,7 +240,8 @@ export async function recognizeByText(
 
 export async function recognizeByImage(
   imageBase64: string,
-  settings: AISettings
+  settings: AISettings,
+  onProgress?: (partial: string) => void,
 ): Promise<AIRecognitionResult> {
   if (!settings.ai_api_key) {
     throw new Error('请先配置 API Key');
@@ -185,28 +250,23 @@ export async function recognizeByImage(
   logInfo('开始图片识别', 'AIService');
   const t0 = Date.now();
 
-  const model = createModel(settings, true);
-
   let content = '';
   try {
-    content = await streamInvoke(
-      model,
+    content = await streamChatCompletion(
+      settings,
+      true,
       [
-        new SystemMessage(SYSTEM_PROMPT),
-        new HumanMessage({
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
           content: [
-            {
-              type: 'text',
-              text: '请识别这张图片中的物品，返回 JSON 格式数据。',
-            },
-            {
-              type: 'image_url',
-              image_url: { url: imageBase64 },
-            },
+            { type: 'text', text: '请识别这张图片中的物品，返回 JSON 格式数据。' },
+            { type: 'image_url', image_url: { url: imageBase64 } },
           ],
-        }),
+        },
       ],
       () => logInfo(`图片识别首包到达(${Date.now() - t0}ms)`, 'AIService'),
+      onProgress ? (_d, total) => onProgress(total) : undefined,
     );
   } catch (err) {
     const detail = describeError(err);
@@ -226,8 +286,10 @@ export async function recognizeByImage(
 }
 
 export function fileToBase64(file: File): Promise<string> {
-  // 压缩到最长边 1024px，JPEG 0.8，避免 base64 body 过大导致请求被取消
-  return compressAndEncode(file, 1024, 0.8);
+  // 压缩到最长边 768px，JPEG 0.8。
+  // 视觉模型（Moonshot/GPT-4o/Qwen-VL）内部按 512x512 tile 处理，
+  // 768px 足够覆盖药品盒、说明书等中近景文字识别，且 base64 体积更小、传输更快。
+  return compressAndEncode(file, 768, 0.8);
 }
 
 function compressAndEncode(
