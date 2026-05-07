@@ -161,6 +161,26 @@ export async function downloadFromWebDAV(
   return importFromJSON(content);
 }
 
+export async function getRemoteBackupTime(
+  serverUrl: string,
+  username: string,
+  password: string,
+  remotePath: string,
+): Promise<string | null> {
+  if (!serverUrl || !username || !password) return null;
+  try {
+    const baseUrl = serverUrl.replace(/\/+$/, '');
+    const fileUrl = baseUrl + remotePath;
+    const resp = await webdavRequest(fileUrl, 'GET', username, password);
+    if (!resp.ok) return null;
+    const content = await resp.text();
+    const data = JSON.parse(content);
+    return data?.__meta__?.exported_at ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function updateLastSyncTime(): Promise<void> {
   const db = await getDb();
   const now = getNow();

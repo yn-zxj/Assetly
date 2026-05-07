@@ -1,5 +1,8 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import type { ExpiryStatus } from '../types/medicine';
+
+dayjs.extend(utc);
 
 export function formatDate(date: string): string {
   if (!date) return '';
@@ -12,7 +15,7 @@ export function formatDateTime(date: string): string {
 }
 
 export function getNow(): string {
-  return dayjs().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+  return dayjs.utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
 }
 
 export function getToday(): string {

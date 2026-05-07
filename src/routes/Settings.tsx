@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap, Cloud, CloudUpload, CloudDownload } from 'lucide-react';
+import dayjs from 'dayjs';
+import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap, Cloud, CloudUpload, CloudDownload, ChevronDown, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
@@ -7,7 +8,7 @@ import { THEME_PRESETS, CURRENCY_OPTIONS } from '../utils/constants';
 import { ChatOpenAI } from '@langchain/openai';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import { getHttpFetch } from '../services/httpFetch';
-import { testWebDAVConnection, uploadToWebDAV, downloadFromWebDAV, updateLastSyncTime } from '../services/webdavService';
+import { testWebDAVConnection, uploadToWebDAV, downloadFromWebDAV, updateLastSyncTime, getRemoteBackupTime } from '../services/webdavService';
 import { formatDateTime } from '../utils/dateHelper';
 
 export default function Settings() {
@@ -38,6 +39,10 @@ export default function Settings() {
   const [webdavSyncLoading, setWebdavSyncLoading] = useState(false);
   const [webdavSyncMsg, setWebdavSyncMsg] = useState('');
   const [showDownloadConfirm, setShowDownloadConfirm] = useState(false);
+  const [aiExpanded, setAiExpanded] = useState(false);
+  const [webdavExpanded, setWebdavExpanded] = useState(false);
+  const [remoteBackupTime, setRemoteBackupTime] = useState<string | null>(null);
+  const [showOldBackupWarning, setShowOldBackupWarning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
@@ -220,6 +225,27 @@ export default function Settings() {
     }
   };
 
+  const handleDownloadClick = async () => {
+    setWebdavSyncLoading(true);
+    setWebdavSyncMsg('');
+    try {
+      const remoteTime = await getRemoteBackupTime(
+        webdav_server_url, webdav_username, webdav_password, webdav_remote_path,
+      );
+      setRemoteBackupTime(remoteTime);
+      if (remoteTime && webdav_last_sync_at && dayjs(remoteTime).isBefore(dayjs(webdav_last_sync_at))) {
+        setShowOldBackupWarning(true);
+      } else {
+        setShowDownloadConfirm(true);
+      }
+    } catch {
+      setRemoteBackupTime(null);
+      setShowDownloadConfirm(true);
+    } finally {
+      setWebdavSyncLoading(false);
+    }
+  };
+
   const handleWebDAVUpload = async () => {
     setWebdavSyncLoading(true);
     setWebdavSyncMsg('');
@@ -239,6 +265,7 @@ export default function Settings() {
 
   const handleWebDAVDownloadConfirm = async () => {
     setShowDownloadConfirm(false);
+    setShowOldBackupWarning(false);
     setWebdavSyncLoading(true);
     setWebdavSyncMsg('');
     try {
@@ -370,11 +397,19 @@ export default function Settings() {
 
       {/* WebDAV Sync */}
       <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Cloud className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">WebDAV 同步</h2>
-        </div>
+        <button
+          type="button"
+          onClick={() => setWebdavExpanded(!webdavExpanded)}
+          className="w-full flex items-center justify-between mb-4"
+        >
+          <div className="flex items-center gap-2">
+            <Cloud className="w-5 h-5 text-primary" />
+            <h2 className="text-sm font-semibold text-gray-700">WebDAV 同步</h2>
+          </div>
+          {webdavExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+        </button>
 
+        {webdavExpanded && (<>
         <div className="flex items-center justify-between mb-4">
           <label className="text-sm text-gray-600">启用 WebDAV</label>
           <button
@@ -464,7 +499,7 @@ export default function Settings() {
                 {webdavSyncLoading ? '同步中...' : '上传备份'}
               </button>
               <button
-                onClick={() => setShowDownloadConfirm(true)}
+                onClick={handleDownloadClick}
                 disabled={webdavSyncLoading || !webdav_server_url || !webdav_username || !webdav_password}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-primary/30 bg-primary/5 rounded-[12px] text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
               >
@@ -490,6 +525,7 @@ export default function Settings() {
             </p>
           </div>
         )}
+        </>)}
       </div>
 
       {/* Logs */}
@@ -510,11 +546,19 @@ export default function Settings() {
 
       {/* AI Config */}
       <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">AI 配置</h2>
-        </div>
+        <button
+          type="button"
+          onClick={() => setAiExpanded(!aiExpanded)}
+          className="w-full flex items-center justify-between mb-4"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h2 className="text-sm font-semibold text-gray-700">AI 配置</h2>
+          </div>
+          {aiExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+        </button>
 
+        {aiExpanded && (<>
         {/* AI Enabled Toggle */}
         <div className="flex items-center justify-between mb-4">
           <label className="text-sm text-gray-600">启用 AI 识别</label>
@@ -684,6 +728,7 @@ export default function Settings() {
             </p>
           </div>
         )}
+        </>)}
       </div>
 
       {/* About */}
@@ -717,6 +762,16 @@ export default function Settings() {
         danger
         onConfirm={handleWebDAVDownloadConfirm}
         onCancel={() => setShowDownloadConfirm(false)}
+      />
+
+      <ConfirmDialog
+        open={showOldBackupWarning}
+        title="远端数据可能较旧"
+        message={`远端备份时间: ${remoteBackupTime ? formatDateTime(remoteBackupTime) : '未知'}\n本地上次同步: ${webdav_last_sync_at ? formatDateTime(webdav_last_sync_at) : '未知'}\n\n远端备份数据可能比本地旧，恢复后可能导致新数据丢失。确定要继续吗？`}
+        confirmLabel="仍然恢复"
+        danger
+        onConfirm={handleWebDAVDownloadConfirm}
+        onCancel={() => setShowOldBackupWarning(false)}
       />
     </div>
   );

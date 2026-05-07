@@ -9,7 +9,13 @@ export async function exportToJSON(): Promise<string> {
   const items = await db.select('SELECT * FROM items ORDER BY created_at DESC');
   const medicines = await db.select('SELECT * FROM medicines ORDER BY expiry_date');
 
-  return JSON.stringify({ categories, locations, items, medicines }, null, 2);
+  return JSON.stringify({
+    __meta__: { exported_at: getNow() },
+    categories,
+    locations,
+    items,
+    medicines,
+  }, null, 2);
 }
 
 export async function exportToCSV(): Promise<string> {
