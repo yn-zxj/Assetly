@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap } from 'lucide-react';
+import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap, Cloud, CloudUpload, CloudDownload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
@@ -7,6 +7,8 @@ import { THEME_PRESETS, CURRENCY_OPTIONS } from '../utils/constants';
 import { ChatOpenAI } from '@langchain/openai';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import { getHttpFetch } from '../services/httpFetch';
+import { testWebDAVConnection, uploadToWebDAV, downloadFromWebDAV, updateLastSyncTime } from '../services/webdavService';
+import { formatDateTime } from '../utils/dateHelper';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -16,6 +18,10 @@ export default function Settings() {
     ai_vision_api_url, ai_vision_api_key, ai_vision_model,
     setAIEnabled, setAIApiUrl, setAIApiKey, setAIModelMode, setAITextModel,
     setAIVisionApiUrl, setAIVisionApiKey, setAIVisionModel,
+    webdav_enabled, webdav_server_url, webdav_username, webdav_password,
+    webdav_remote_path, webdav_last_sync_at,
+    setWebDAVEnabled, setWebDAVServerUrl, setWebDAVUsername,
+    setWebDAVPassword, setWebDAVRemotePath,
   } = useSettingsStore();
   const [exporting, setExporting] = useState(false);
   const [exportMsg, setExportMsg] = useState('');
@@ -26,6 +32,12 @@ export default function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
   const [testMsg, setTestMsg] = useState('');
+  const [showWebDAVPassword, setShowWebDAVPassword] = useState(false);
+  const [webdavTestLoading, setWebdavTestLoading] = useState(false);
+  const [webdavTestMsg, setWebdavTestMsg] = useState('');
+  const [webdavSyncLoading, setWebdavSyncLoading] = useState(false);
+  const [webdavSyncMsg, setWebdavSyncMsg] = useState('');
+  const [showDownloadConfirm, setShowDownloadConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
@@ -195,6 +207,58 @@ export default function Settings() {
     }
   };
 
+  const handleWebDAVTest = async () => {
+    setWebdavTestLoading(true);
+    setWebdavTestMsg('');
+    try {
+      const result = await testWebDAVConnection(
+        webdav_server_url, webdav_username, webdav_password, webdav_remote_path,
+      );
+      setWebdavTestMsg(result);
+    } finally {
+      setWebdavTestLoading(false);
+    }
+  };
+
+  const handleWebDAVUpload = async () => {
+    setWebdavSyncLoading(true);
+    setWebdavSyncMsg('');
+    try {
+      await uploadToWebDAV(
+        webdav_server_url, webdav_username, webdav_password, webdav_remote_path,
+      );
+      await updateLastSyncTime();
+      await useSettingsStore.getState().loadSettings();
+      setWebdavSyncMsg('备份上传成功');
+    } catch (err) {
+      setWebdavSyncMsg(`上传失败: ${(err as Error).message}`);
+    } finally {
+      setWebdavSyncLoading(false);
+    }
+  };
+
+  const handleWebDAVDownloadConfirm = async () => {
+    setShowDownloadConfirm(false);
+    setWebdavSyncLoading(true);
+    setWebdavSyncMsg('');
+    try {
+      const result = await downloadFromWebDAV(
+        webdav_server_url, webdav_username, webdav_password, webdav_remote_path,
+      );
+      if (result.errors.length > 0 && result.success === 0) {
+        setWebdavSyncMsg(`恢复失败: ${result.errors[0]}`);
+      } else {
+        await updateLastSyncTime();
+        setWebdavSyncMsg(`恢复完成: 成功 ${result.success} 条${result.failed > 0 ? `，失败 ${result.failed} 条` : ''}`);
+        window.location.reload();
+      }
+    } catch (err) {
+      setWebdavSyncMsg(`下载失败: ${(err as Error).message}`);
+    } finally {
+      setWebdavSyncLoading(false);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       <h1 className="text-xl font-bold text-gray-800 mb-5">设置</h1>
@@ -301,6 +365,130 @@ export default function Settings() {
           <p className={`text-xs mt-2 ${importMsg.includes('成功') || importMsg.includes('完成') ? 'text-green-600' : 'text-red-500'}`}>
             {importMsg}
           </p>
+        )}
+      </div>
+
+      {/* WebDAV Sync */}
+      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Cloud className="w-5 h-5 text-primary" />
+          <h2 className="text-sm font-semibold text-gray-700">WebDAV 同步</h2>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <label className="text-sm text-gray-600">启用 WebDAV</label>
+          <button
+            type="button"
+            onClick={() => setWebDAVEnabled(!webdav_enabled)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${webdav_enabled ? 'bg-primary' : 'bg-gray-300'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${webdav_enabled ? 'translate-x-5' : ''}`} />
+          </button>
+        </div>
+
+        {webdav_enabled && (
+          <div className="space-y-3">
+            <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">服务器地址</label>
+                <input
+                  type="text"
+                  value={webdav_server_url}
+                  onChange={(e) => setWebDAVServerUrl(e.target.value)}
+                  placeholder="https://dav.example.com"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">用户名</label>
+                <input
+                  type="text"
+                  value={webdav_username}
+                  onChange={(e) => setWebDAVUsername(e.target.value)}
+                  placeholder="username"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">密码</label>
+                <div className="relative">
+                  <input
+                    type={showWebDAVPassword ? 'text' : 'password'}
+                    value={webdav_password}
+                    onChange={(e) => setWebDAVPassword(e.target.value)}
+                    placeholder="password"
+                    className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowWebDAVPassword(!showWebDAVPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  >
+                    {showWebDAVPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">远程路径</label>
+                <input
+                  type="text"
+                  value={webdav_remote_path}
+                  onChange={(e) => setWebDAVRemotePath(e.target.value)}
+                  placeholder="/assetly-backup.json"
+                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleWebDAVTest}
+              disabled={webdavTestLoading || !webdav_server_url || !webdav_username || !webdav_password}
+              className="w-full flex items-center justify-center gap-2 py-2.5 border border-primary/30 bg-primary/5 rounded-[12px] text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+            >
+              {webdavTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {webdavTestLoading ? '测试中...' : '测试连接'}
+            </button>
+            {webdavTestMsg && (
+              <p className={`text-xs ${webdavTestMsg.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
+                {webdavTestMsg}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleWebDAVUpload}
+                disabled={webdavSyncLoading || !webdav_server_url || !webdav_username || !webdav_password}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-[12px] text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                <CloudUpload className="w-4 h-4" />
+                {webdavSyncLoading ? '同步中...' : '上传备份'}
+              </button>
+              <button
+                onClick={() => setShowDownloadConfirm(true)}
+                disabled={webdavSyncLoading || !webdav_server_url || !webdav_username || !webdav_password}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-primary/30 bg-primary/5 rounded-[12px] text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+              >
+                <CloudDownload className="w-4 h-4" />
+                {webdavSyncLoading ? '同步中...' : '下载恢复'}
+              </button>
+            </div>
+
+            {webdavSyncMsg && (
+              <p className={`text-xs ${webdavSyncMsg.includes('成功') || webdavSyncMsg.includes('完成') ? 'text-green-600' : 'text-red-500'}`}>
+                {webdavSyncMsg}
+              </p>
+            )}
+
+            {webdav_last_sync_at && (
+              <p className="text-xs text-gray-400">
+                上次同步: {formatDateTime(webdav_last_sync_at)}
+              </p>
+            )}
+
+            <p className="text-xs text-gray-400">
+              密码仅存储在本地，不会上传到任何服务器
+            </p>
+          </div>
         )}
       </div>
 
@@ -519,6 +707,16 @@ export default function Settings() {
         danger
         onConfirm={handleImportConfirm}
         onCancel={() => { setShowImportConfirm(false); setPendingImportData(''); }}
+      />
+
+      <ConfirmDialog
+        open={showDownloadConfirm}
+        title="确认恢复"
+        message="从 WebDAV 下载数据会覆盖现有数据（相同 ID 的记录将被替换）。确定要继续吗？"
+        confirmLabel="确认恢复"
+        danger
+        onConfirm={handleWebDAVDownloadConfirm}
+        onCancel={() => setShowDownloadConfirm(false)}
       />
     </div>
   );

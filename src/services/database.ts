@@ -186,5 +186,16 @@ function getMigrations(): Migration[] {
         `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('ai_vision_model', '"gpt-4o"', '${now}')`,
       ],
     },
+    {
+      version: 6,
+      statements: [
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_enabled', 'false', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_server_url', '""', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_username', '""', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_password', '""', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_remote_path', '"/assetly-backup.json"', '${now}')`,
+        `INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES ('webdav_last_sync_at', '""', '${now}')`,
+      ],
+    },
   ];
 }

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { getDb } from '../services/database';
 import { getNow } from '../utils/dateHelper';
-import type { AISettings } from '../types/settings';
+import type { AISettings, WebDAVSettings } from '../types/settings';
 
-interface SettingsState extends AISettings {
+interface SettingsState extends AISettings, WebDAVSettings {
   themeColor: string;
   currencySymbol: string;
   loaded: boolean;
@@ -18,6 +18,12 @@ interface SettingsState extends AISettings {
   setAIVisionApiUrl: (url: string) => Promise<void>;
   setAIVisionApiKey: (key: string) => Promise<void>;
   setAIVisionModel: (model: string) => Promise<void>;
+  setWebDAVEnabled: (enabled: boolean) => Promise<void>;
+  setWebDAVServerUrl: (url: string) => Promise<void>;
+  setWebDAVUsername: (username: string) => Promise<void>;
+  setWebDAVPassword: (password: string) => Promise<void>;
+  setWebDAVRemotePath: (path: string) => Promise<void>;
+  setWebDAVLastSyncAt: (time: string) => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
@@ -31,6 +37,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   ai_vision_api_url: 'https://api.openai.com/v1',
   ai_vision_api_key: '',
   ai_vision_model: 'gpt-4o',
+  webdav_enabled: false,
+  webdav_server_url: '',
+  webdav_username: '',
+  webdav_password: '',
+  webdav_remote_path: '/assetly-backup.json',
+  webdav_last_sync_at: '',
   loaded: false,
 
   loadSettings: async () => {
@@ -55,6 +67,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       ai_vision_api_url: settings.ai_vision_api_url || 'https://api.openai.com/v1',
       ai_vision_api_key: settings.ai_vision_api_key || '',
       ai_vision_model: settings.ai_vision_model || 'gpt-4o',
+      webdav_enabled: String(settings.webdav_enabled) === 'true',
+      webdav_server_url: settings.webdav_server_url || '',
+      webdav_username: settings.webdav_username || '',
+      webdav_password: settings.webdav_password || '',
+      webdav_remote_path: settings.webdav_remote_path || '/assetly-backup.json',
+      webdav_last_sync_at: settings.webdav_last_sync_at || '',
       loaded: true,
     });
   },
@@ -148,5 +166,59 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       [JSON.stringify(model), getNow()]
     );
     set({ ai_vision_model: model });
+  },
+
+  setWebDAVEnabled: async (enabled: boolean) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_enabled', $1, $2)",
+      [JSON.stringify(enabled), getNow()]
+    );
+    set({ webdav_enabled: enabled });
+  },
+
+  setWebDAVServerUrl: async (url: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_server_url', $1, $2)",
+      [JSON.stringify(url), getNow()]
+    );
+    set({ webdav_server_url: url });
+  },
+
+  setWebDAVUsername: async (username: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_username', $1, $2)",
+      [JSON.stringify(username), getNow()]
+    );
+    set({ webdav_username: username });
+  },
+
+  setWebDAVPassword: async (password: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_password', $1, $2)",
+      [JSON.stringify(password), getNow()]
+    );
+    set({ webdav_password: password });
+  },
+
+  setWebDAVRemotePath: async (path: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_remote_path', $1, $2)",
+      [JSON.stringify(path), getNow()]
+    );
+    set({ webdav_remote_path: path });
+  },
+
+  setWebDAVLastSyncAt: async (time: string) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('webdav_last_sync_at', $1, $2)",
+      [JSON.stringify(time), getNow()]
+    );
+    set({ webdav_last_sync_at: time });
   },
 }));

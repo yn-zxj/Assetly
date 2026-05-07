@@ -23,6 +23,15 @@ export interface MonthlySpending {
   amount: number;
 }
 
+export interface WebDAVSettings {
+  webdav_enabled: boolean;
+  webdav_server_url: string;
+  webdav_username: string;
+  webdav_password: string;
+  webdav_remote_path: string;
+  webdav_last_sync_at: string;
+}
+
 export interface AISettings {
   ai_enabled: boolean;
   ai_model_mode: 'single' | 'separate';
