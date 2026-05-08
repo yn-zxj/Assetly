@@ -67,10 +67,40 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build macOS Universal
-        run: pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json
+      - name: Build macOS Universal (.app)
+        run: pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
+
+      - name: Bundle macOS DMG (with retry)
+        shell: bash
+        run: |
+          set -e
+          cleanup_mounts() {
+            echo "🔧 Cleaning up lingering DMG mounts..."
+            hdiutil info | awk '/^\/dev\/disk/ {dev=$1} /image-path.*Assetly/ {print dev}' | while read -r dev; do
+              echo "Detaching $dev"
+              hdiutil detach "$dev" -force || true
+            done
+            # 删除残留的 rw.dmg 临时文件
+            find src-tauri/target/universal-apple-darwin/release/bundle/dmg -maxdepth 1 -name '*.dmg' -delete || true
+          }
+          for attempt in 1 2 3; do
+            echo "==== DMG bundling attempt $attempt ===="
+            if pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles dmg --verbose; then
+              echo "✅ DMG bundled successfully"
+              exit 0
+            fi
+            echo "❌ Attempt $attempt failed"
+            cleanup_mounts
+            sleep 10
+          done
+          echo "❌ All DMG bundling attempts failed"
+          exit 1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
