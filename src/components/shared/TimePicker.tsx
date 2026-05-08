@@ -103,11 +103,11 @@ export default function TimePicker({ value, onChange, placeholder = '选择时�
     <div ref={containerRef} className="relative">
       <div
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-border rounded-lg text-sm cursor-pointer hover:border-gray-300 transition-colors min-w-[80px] justify-center ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-gray-800 border border-border rounded-lg text-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-colors min-w-[80px] justify-center ${
           open ? 'border-primary ring-1 ring-primary/20' : ''
         }`}
       >
-        <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+        <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
         <span className={displayValue ? 'text-gray-800 font-mono' : 'text-gray-400'}>
           {displayValue || placeholder}
         </span>
@@ -120,16 +120,16 @@ export default function TimePicker({ value, onChange, placeholder = '选择时�
             onMouseDown={() => setOpen(false)}
           />
           <div
-            className="relative bg-white rounded-t-3xl w-full max-w-md"
+            className="relative bg-white dark:bg-[#1E1E1E] rounded-t-3xl w-full max-w-md"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
               <div className="w-8" />
-              <h3 className="text-base font-semibold text-gray-800">用药时间</h3>
+              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">用药时间</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-1 rounded-lg hover:bg-gray-100"
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -150,7 +150,7 @@ export default function TimePicker({ value, onChange, placeholder = '选择时�
                       className={`w-16 h-12 flex items-center justify-center text-xl ${
                         selectedHour === hour
                           ? 'text-gray-900 font-semibold'
-                          : 'text-gray-300'
+                          : 'text-gray-300 dark:text-gray-600'
                       }`}
                       style={{ scrollSnapAlign: 'center' } as React.CSSProperties}
                     >
@@ -165,7 +165,7 @@ export default function TimePicker({ value, onChange, placeholder = '选择时�
                 />
               </div>
 
-              <div className="text-2xl font-bold text-gray-900 pb-1">:</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 pb-1">:</div>
 
               <div className="relative">
                 <div
@@ -181,7 +181,7 @@ export default function TimePicker({ value, onChange, placeholder = '选择时�
                       className={`w-16 h-12 flex items-center justify-center text-xl ${
                         selectedMinute === minute
                           ? 'text-gray-900 font-semibold'
-                          : 'text-gray-300'
+                          : 'text-gray-300 dark:text-gray-600'
                       }`}
                       style={{ scrollSnapAlign: 'center' } as React.CSSProperties}
                     >

@@ -42,7 +42,7 @@ export default function Locations() {
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold text-gray-800">位置管理</h1>
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">位置管理</h1>
         <button
           onClick={() => setAddParentId('root')}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-[12px] text-sm font-medium hover:opacity-90"
@@ -53,7 +53,7 @@ export default function Locations() {
 
       {/* Add form */}
       {addParentId !== null && (
-        <div className="bg-white rounded-[16px] p-4 border border-primary/30 mb-4">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[16px] p-4 border border-primary/30 mb-4">
           <p className="text-sm text-muted mb-2">
             {addParentId === 'root' ? '添加顶级位置' : '添加子位置'}
           </p>
@@ -63,7 +63,7 @@ export default function Locations() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="位置名称"
-              className="flex-1 px-3 py-2 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+              className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             />
@@ -81,7 +81,7 @@ export default function Locations() {
       <div className="space-y-1">
         {locationTree.length === 0 ? (
           <div className="text-center py-12 text-sm text-muted">
-            <FolderOpen className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+            <FolderOpen className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
             暂无位置，点击"添加位置"创建
           </div>
         ) : (
@@ -136,7 +136,7 @@ function LocationNode({
   return (
     <div>
       <div
-        className="flex items-center gap-2 bg-white rounded-[12px] p-3 border border-border/50 hover:border-gray-300 transition-colors"
+        className="flex items-center gap-2 bg-white dark:bg-[#1E1E1E] rounded-[12px] p-3 border border-border/50 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
         style={{ marginLeft: `${depth * 24}px` }}
       >
         <button
@@ -145,7 +145,7 @@ function LocationNode({
           disabled={node.children.length === 0}
         >
           {node.children.length > 0 ? (
-            expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />
+            expanded ? <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           ) : (
             <span className="w-4 h-4 block" />
           )}
@@ -157,7 +157,7 @@ function LocationNode({
               type="text"
               value={editName}
               onChange={(e) => onEditNameChange(e.target.value)}
-              className="flex-1 px-2 py-1 border border-primary rounded-lg text-sm outline-none"
+              className="flex-1 px-2 py-1 border border-primary rounded-lg text-sm outline-none bg-white dark:bg-gray-800 dark:text-gray-100"
               autoFocus
               onKeyDown={(e) => { if (e.key === 'Enter') onEditSave(); if (e.key === 'Escape') onEditCancel(); }}
             />
@@ -167,16 +167,16 @@ function LocationNode({
         ) : (
           <>
             <FolderOpen className="w-4 h-4 text-primary/60 shrink-0" />
-            <span className="flex-1 text-sm text-gray-800">{node.name}</span>
+            <span className="flex-1 text-sm text-gray-800 dark:text-gray-100">{node.name}</span>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100">
-              <button onClick={() => onAdd(node.id)} className="p-1.5 rounded-lg hover:bg-gray-100" title="添加子位置">
-                <Plus className="w-3.5 h-3.5 text-gray-400" />
+              <button onClick={() => onAdd(node.id)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" title="添加子位置">
+                <Plus className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               </button>
-              <button onClick={() => onEditStart(node.id, node.name)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <Edit2 className="w-3.5 h-3.5 text-gray-400" />
+              <button onClick={() => onEditStart(node.id, node.name)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Edit2 className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               </button>
-              <button onClick={() => onDelete(node.id)} className="p-1.5 rounded-lg hover:bg-red-50">
-                <Trash2 className="w-3.5 h-3.5 text-gray-400" />
+              <button onClick={() => onDelete(node.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30">
+                <Trash2 className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               </button>
             </div>
           </>

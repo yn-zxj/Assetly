@@ -48,19 +48,19 @@ export default function ItemDetail() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-[10px] hover:bg-gray-100">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-gray-800">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
         <div className="flex gap-2">
           <button
             onClick={() => navigate(`/items/${id}/edit`)}
-            className="p-2 rounded-[10px] hover:bg-gray-100"
+            className="p-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <Edit2 className="w-5 h-5 text-gray-600" />
           </button>
           <button
             onClick={() => setShowDelete(true)}
-            className="p-2 rounded-[10px] hover:bg-red-50"
+            className="p-2 rounded-[10px] hover:bg-red-50 dark:hover:bg-red-900/30"
           >
             <Trash2 className="w-5 h-5 text-danger" />
           </button>
@@ -68,31 +68,31 @@ export default function ItemDetail() {
       </div>
 
       {/* Icon */}
-      <div className="h-48 bg-gray-100 rounded-[20px] flex items-center justify-center mb-5">
+      <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded-[20px] flex items-center justify-center mb-5">
         <span className="text-7xl">{item.icon || '📦'}</span>
       </div>
 
       {/* Name & Status */}
       <div className="flex items-start justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">{item.name}</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{item.name}</h1>
         <span className={`text-xs px-3 py-1 rounded-full ${
-          item.status === 'active' ? 'bg-green-50 text-green-600' :
-          item.status === 'archived' ? 'bg-yellow-50 text-yellow-600' :
-          'bg-gray-100 text-gray-500'
+          item.status === 'active' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+          item.status === 'archived' ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
+          'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
         }`}>
           {ITEM_STATUS_LABELS[item.status]}
         </span>
       </div>
 
       {/* Price */}
-      <div className="bg-white rounded-[20px] p-4 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 mb-4">
         <p className="text-3xl font-bold text-primary font-mono">
           {formatCurrencyFull(item.purchase_price * item.quantity, currencySymbol)}
         </p>
         {dailyCost !== null && (
           <p className="text-sm text-muted mt-1">
             日均成本 <span className="font-mono font-medium text-gray-700">{formatCurrencyFull(dailyCost, currencySymbol)}</span>
-            <span className="text-gray-400"> ({days} 天)</span>
+            <span className="text-gray-400 dark:text-gray-500"> ({days} 天)</span>
           </p>
         )}
       </div>
@@ -106,7 +106,7 @@ export default function ItemDetail() {
             </div>
             <div>
               <p className="text-xs text-muted">分类</p>
-              <p className="text-sm font-medium text-gray-800">{item.category_name}</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.category_name}</p>
             </div>
           </div>
         )}
@@ -118,7 +118,7 @@ export default function ItemDetail() {
             </div>
             <div>
               <p className="text-xs text-muted">位置</p>
-              <p className="text-sm font-medium text-gray-800">{item.location_full_path.replace(/\//g, ' > ')}</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.location_full_path.replace(/\//g, ' > ')}</p>
             </div>
           </div>
         )}
@@ -130,7 +130,7 @@ export default function ItemDetail() {
             </div>
             <div>
               <p className="text-xs text-muted">购买日期</p>
-              <p className="text-sm font-medium text-gray-800">{formatDate(item.purchase_date)}</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{formatDate(item.purchase_date)}</p>
             </div>
           </div>
         )}
@@ -141,14 +141,14 @@ export default function ItemDetail() {
           </div>
           <div>
             <p className="text-xs text-muted">数量</p>
-            <p className="text-sm font-medium text-gray-800">{item.quantity} 件</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.quantity} 件</p>
           </div>
         </div>
 
         {item.description && (
-          <div className="bg-white rounded-[16px] p-3.5 border border-border/50">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-[16px] p-3.5 border border-border/50">
             <p className="text-xs text-muted mb-1">备注</p>
-            <p className="text-sm text-gray-700">{item.description}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{item.description}</p>
           </div>
         )}
       </div>

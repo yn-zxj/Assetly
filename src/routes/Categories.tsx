@@ -68,7 +68,7 @@ export default function Categories() {
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold text-gray-800">分类管理</h1>
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">分类管理</h1>
         <button
           onClick={openAdd}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-[12px] text-sm font-medium hover:opacity-90"
@@ -79,7 +79,7 @@ export default function Categories() {
 
       <div className="space-y-2">
         {categories.map((cat) => (
-          <div key={cat.id} className="flex items-center gap-3 bg-white rounded-[16px] p-3.5 border border-border/50">
+          <div key={cat.id} className="flex items-center gap-3 bg-white dark:bg-[#1E1E1E] rounded-[16px] p-3.5 border border-border/50">
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
               style={{ backgroundColor: cat.color + '20' }}
@@ -87,10 +87,10 @@ export default function Categories() {
               {iconEmoji(cat.icon)}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">{cat.name}</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{cat.name}</p>
             </div>
             <div className="flex gap-1">
-              <button onClick={() => openEdit(cat.id)} className="p-2 rounded-lg hover:bg-gray-100">
+              <button onClick={() => openEdit(cat.id)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                 <Edit2 className="w-4 h-4 text-gray-400" />
               </button>
               <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg hover:bg-red-50">
@@ -105,11 +105,11 @@ export default function Categories() {
       {showForm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-[20px] p-6 w-full max-w-sm shadow-xl">
+          <div className="relative bg-white dark:bg-[#1E1E1E] rounded-[20px] p-6 w-full max-w-sm shadow-xl">
             <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100">
               <X className="w-4 h-4 text-gray-400" />
             </button>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">{editId ? '编辑分类' : '添加分类'}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{editId ? '编辑分类' : '添加分类'}</h3>
 
             <div className="space-y-4">
               <input
@@ -117,7 +117,7 @@ export default function Categories() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="分类名称"
-                className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
               />
 
               <div>

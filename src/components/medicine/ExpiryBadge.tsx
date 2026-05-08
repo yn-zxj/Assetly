@@ -10,9 +10,9 @@ export default function ExpiryBadge({ expiryDate, className = '' }: ExpiryBadgeP
   const label = getExpiryLabel(expiryDate);
 
   const styles = {
-    safe: 'bg-green-50 text-green-600',
-    warning: 'bg-yellow-50 text-yellow-700',
-    expired: 'bg-red-50 text-red-600',
+    safe: 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+    warning: 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+    expired: 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400',
   };
 
   return (

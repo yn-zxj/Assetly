@@ -95,13 +95,13 @@ export function PieChartComponent({
               <div key={index} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-gray-600">{item.name}</span>
+                  <span className="text-gray-600 dark:text-gray-300">{item.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-medium text-gray-800">
+                  <span className="font-mono font-medium text-gray-800 dark:text-gray-100">
                     {formatCurrency(item.value, currencySymbol)}
                   </span>
-                  <span className="text-xs text-gray-400 w-10 text-right">{percentage}%</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 w-10 text-right">{percentage}%</span>
                 </div>
               </div>
             );

@@ -39,7 +39,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
     <div ref={triggerRef} className="relative">
       <div
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm cursor-pointer hover:border-gray-300 transition-colors ${
+        className={`w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-gray-800 border border-border rounded-[10px] text-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-colors ${
           open ? 'border-primary ring-1 ring-primary/20' : ''
         }`}
       >
@@ -54,15 +54,15 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
           className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/40 backdrop-blur-[2px]"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
-          <div className="w-full max-w-lg bg-white rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom duration-200 pb-[env(safe-area-inset-bottom,0px)]">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1E1E1E] rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom duration-200 pb-[env(safe-area-inset-bottom,0px)]">
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
             </div>
 
             {/* Title */}
             <div className="px-4 pb-2">
-              <p className="text-sm font-medium text-gray-500">{placeholder}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{placeholder}</p>
             </div>
 
             {/* Options */}
@@ -77,7 +77,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
                     className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${
                       isActive
                         ? 'bg-primary/5 text-primary'
-                        : 'text-gray-700 active:bg-gray-50'
+                        : 'text-gray-700 dark:text-gray-200 active:bg-gray-50 dark:active:bg-gray-800'
                     }`}
                   >
                     <span className={`text-[15px] ${isActive ? 'font-medium' : ''}`}>
@@ -94,7 +94,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-full py-3 text-sm font-medium text-gray-500 bg-gray-50 rounded-xl active:bg-gray-100 transition-colors"
+                className="w-full py-3 text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl active:bg-gray-100 dark:active:bg-gray-700 transition-colors"
               >
                 取消
               </button>

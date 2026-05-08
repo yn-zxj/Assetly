@@ -3,13 +3,17 @@ import { getDb } from '../services/database';
 import { getNow } from '../utils/dateHelper';
 import type { AISettings, WebDAVSettings } from '../types/settings';
 
+export type ColorMode = 'light' | 'dark' | 'system';
+
 interface SettingsState extends AISettings, WebDAVSettings {
   themeColor: string;
   currencySymbol: string;
+  colorMode: ColorMode;
   loaded: boolean;
   loadSettings: () => Promise<void>;
   setThemeColor: (color: string) => Promise<void>;
   setCurrencySymbol: (symbol: string) => Promise<void>;
+  setColorMode: (mode: ColorMode) => Promise<void>;
   setAIEnabled: (enabled: boolean) => Promise<void>;
   setAIModelMode: (mode: 'single' | 'separate') => Promise<void>;
   setAIApiUrl: (url: string) => Promise<void>;
@@ -26,9 +30,26 @@ interface SettingsState extends AISettings, WebDAVSettings {
   setWebDAVLastSyncAt: (time: string) => Promise<void>;
 }
 
+let mediaCleanup: (() => void) | null = null;
+
+function applyColorMode(mode: ColorMode) {
+  mediaCleanup?.();
+  mediaCleanup = null;
+  if (mode === 'system') {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => document.documentElement.classList.toggle('dark', mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    mediaCleanup = () => mq.removeEventListener('change', update);
+  } else {
+    document.documentElement.classList.toggle('dark', mode === 'dark');
+  }
+}
+
 export const useSettingsStore = create<SettingsState>((set) => ({
   themeColor: '#22C55E',
   currencySymbol: '¥',
+  colorMode: 'light',
   ai_enabled: false,
   ai_model_mode: 'single',
   ai_api_url: 'https://api.openai.com/v1',
@@ -56,9 +77,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         settings[row.key] = row.value;
       }
     }
+    const colorMode = (settings.color_mode as ColorMode) || 'light';
+    applyColorMode(colorMode);
     set({
       themeColor: settings.theme_color || '#22C55E',
       currencySymbol: settings.currency_symbol || '¥',
+      colorMode,
       ai_enabled: String(settings.ai_enabled) === 'true',
       ai_model_mode: settings.ai_model_mode === 'separate' ? 'separate' : 'single',
       ai_api_url: settings.ai_api_url || 'https://api.openai.com/v1',
@@ -94,6 +118,16 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       [JSON.stringify(symbol), getNow()]
     );
     set({ currencySymbol: symbol });
+  },
+
+  setColorMode: async (mode: ColorMode) => {
+    const db = await getDb();
+    await db.execute(
+      "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('color_mode', $1, $2)",
+      [JSON.stringify(mode), getNow()]
+    );
+    applyColorMode(mode);
+    set({ colorMode: mode });
   },
 
   setAIEnabled: async (enabled: boolean) => {

@@ -64,9 +64,9 @@ export default function AppShell() {
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <aside className="w-60 bg-surface border-r border-border flex flex-col shrink-0">
+        <aside className="w-60 bg-surface dark:bg-[#1E1E1E] border-r border-border flex flex-col shrink-0">
           <div className="p-5 border-b border-border">
-            <h1 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
               <Package className="w-6 h-6 text-primary" />
               Assetly
             </h1>
@@ -82,7 +82,7 @@ export default function AppShell() {
                   `flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-primary/10 text-primary'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`
                 }
               >
@@ -100,7 +100,7 @@ export default function AppShell() {
                     `flex items-center gap-2 px-3 py-2 rounded-[12px] text-sm transition-colors ${
                       isActive
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-500 hover:bg-gray-100'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`
                   }
                 >
@@ -131,7 +131,7 @@ export default function AppShell() {
           className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-center px-4 pointer-events-none"
           style={{ paddingBottom: `calc(1.25rem + env(safe-area-inset-bottom, 0px))` }}
         >
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl rounded-full px-2 py-2 shadow-lg shadow-black/8 border border-gray-100 pointer-events-auto">
+          <div className="flex items-center gap-2 bg-white/90 dark:bg-[#1E1E1E]/90 backdrop-blur-xl rounded-full px-2 py-2 shadow-lg shadow-black/8 border border-gray-100 dark:border-gray-800 pointer-events-auto">
             {navItems.map((item) => {
               const isActive = item.to === '/settings' ? isSettingsActive : location.pathname === item.to;
               return (
@@ -143,7 +143,7 @@ export default function AppShell() {
                     `flex items-center justify-center w-14 h-12 rounded-full transition-all duration-200 ${
                       isActive
                         ? 'bg-primary text-white shadow-md shadow-primary/25'
-                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`
                   }
                 >

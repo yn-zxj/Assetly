@@ -112,11 +112,11 @@ export default function ItemForm() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-[10px] hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <h1 className="text-xl font-bold text-gray-800">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
           {isEdit ? '编辑物品' : '添加物品'}
         </h1>
         {aiFilled && (
@@ -131,23 +131,23 @@ export default function ItemForm() {
         {/* Icon & Name */}
         <div className="flex gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">图标</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">图标</label>
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="w-12 h-12 bg-white border border-border rounded-[10px] flex items-center justify-center text-2xl hover:border-primary transition-colors"
+              className="w-12 h-12 bg-white dark:bg-gray-800 border border-border rounded-[10px] flex items-center justify-center text-2xl hover:border-primary transition-colors"
             >
               {form.icon || '📦'}
             </button>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">名称 *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">名称 *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
               placeholder="请输入物品名称"
-              className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+              className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
               required
             />
           </div>
@@ -155,7 +155,7 @@ export default function ItemForm() {
 
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div className="bg-white border border-border rounded-[16px] p-3 shadow-sm">
+          <div className="bg-white dark:bg-[#1E1E1E] border border-border rounded-[16px] p-3 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted">选择图标</span>
               {form.icon && (
@@ -174,19 +174,19 @@ export default function ItemForm() {
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">描述/备注</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">描述/备注</label>
           <textarea
             value={form.description}
             onChange={(e) => updateField('description', e.target.value)}
             placeholder="可选填写物品描述"
             rows={3}
-            className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none"
+            className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none"
           />
         </div>
 
         {/* Category */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">分类</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">分类</label>
           <CustomSelect
             value={form.category_id}
             onChange={(v) => updateField('category_id', v)}
@@ -200,14 +200,14 @@ export default function ItemForm() {
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">存放位置</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">存放位置</label>
           <LocationPicker value={form.location_id} onChange={(id) => updateField('location_id', id)} />
         </div>
 
         {/* Purchase Date & Price */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">购买日期</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">购买日期</label>
             <DatePicker
               value={form.purchase_date}
               onChange={(v) => updateField('purchase_date', v)}
@@ -215,7 +215,7 @@ export default function ItemForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">购买价格</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">购买价格</label>
             <input
               type="number"
               min="0"
@@ -223,7 +223,7 @@ export default function ItemForm() {
               value={form.purchase_price || ''}
               onChange={(e) => updateField('purchase_price', Number(e.target.value))}
               placeholder="0.00"
-              className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 font-mono"
+              className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 font-mono"
             />
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function ItemForm() {
         {/* Warranty & Shelf Life Expiry */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">保修期至</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">保修期至</label>
             <DatePicker
               value={form.warranty_expiry}
               onChange={(v) => updateField('warranty_expiry', v)}
@@ -239,7 +239,7 @@ export default function ItemForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">保质期至</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">保质期至</label>
             <DatePicker
               value={form.shelf_life_expiry}
               onChange={(v) => updateField('shelf_life_expiry', v)}
@@ -251,17 +251,17 @@ export default function ItemForm() {
         {/* Quantity & Status */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">数量</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">数量</label>
             <input
               type="number"
               min="1"
               value={form.quantity}
               onChange={(e) => updateField('quantity', Number(e.target.value))}
-              className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+              className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">状态</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">状态</label>
             <CustomSelect
               value={form.status}
               onChange={(v) => updateField('status', v as ItemFormData['status'])}

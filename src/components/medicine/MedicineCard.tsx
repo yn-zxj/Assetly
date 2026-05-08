@@ -59,10 +59,10 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-[20px] p-3 border border-border/50 cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-3 border border-border/50 cursor-pointer hover:shadow-md transition-shadow"
     >
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center shrink-0 relative">
+        <div className="w-10 h-10 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center shrink-0 relative">
           <Pill className="w-5 h-5 text-green-500" />
           {!!medicine.is_taking && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
@@ -73,14 +73,14 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
         <div className="flex-1 min-w-0">
           {/* Row 1: name + type tag + expiry badge */}
           <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="text-sm font-semibold text-gray-800 truncate">{medicine.name}</h3>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{medicine.name}</h3>
             {MEDICINE_TYPE_LABELS[medicine.medicine_type] && (
-              <span className="shrink-0 text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full">
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
                 {MEDICINE_TYPE_LABELS[medicine.medicine_type]}
               </span>
             )}
             {!!medicine.is_taking && (
-              <span className="shrink-0 text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded-full">
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full">
                 服用中
               </span>
             )}
@@ -91,12 +91,12 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
 
           {/* Row 2: frequency/time or dosage instructions */}
           {!!medicine.is_taking && (frequencyDisplay || timeSlotsDisplay) ? (
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {frequencyDisplay}{frequencyDisplay && timeSlotsDisplay ? ' ' : ''}{timeSlotsDisplay}
-              {durationDisplay && <span className="text-gray-400"> · {durationDisplay}</span>}
+              {durationDisplay && <span className="text-gray-400 dark:text-gray-500"> · {durationDisplay}</span>}
             </p>
           ) : medicine.dosage_instructions && medicine.dosage_instructions !== '0' ? (
-            <p className="text-xs text-gray-500 truncate">{medicine.dosage_instructions}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{medicine.dosage_instructions}</p>
           ) : null}
 
           {/* Row 3: location + price + stock (all in one row) */}
@@ -104,7 +104,7 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {medicine.location_full_path && (
                 <div className="flex items-center gap-0.5 min-w-0">
-                  <MapPin className="w-3 h-3 text-gray-300 shrink-0" />
+                  <MapPin className="w-3 h-3 text-gray-300 dark:text-gray-600 shrink-0" />
                   <span className="text-xs text-gray-400 truncate">{medicine.location_full_path.replace(/\//g, ' > ')}</span>
                 </div>
               )}
@@ -122,9 +122,9 @@ export default function MedicineCard({ medicine, onClick, onUpdateQuantity }: Me
                 <button
                   onClick={(e) => handleQuantityChange(e, -1)}
                   disabled={medicine.remaining_quantity <= 0}
-                  className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors disabled:opacity-30"
+                  className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-colors disabled:opacity-30"
                 >
-                  <Minus className="w-3 h-3 text-gray-600" />
+                  <Minus className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                 </button>
                 <button
                   onClick={(e) => handleQuantityChange(e, 1)}

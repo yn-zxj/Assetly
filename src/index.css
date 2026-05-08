@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-primary: #22C55E;
   --color-primary-light: #4ADE80;
@@ -15,6 +17,21 @@
   --radius-button: 12px;
   --radius-input: 10px;
   --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --chart-1: 142 71% 45%;
+  --chart-2: 217 91% 60%;
+  --muted: 220 9% 46%;
+  --border: 220 13% 91%;
+}
+
+.dark {
+  --color-surface: #1E1E1E;
+  --color-background: #121212;
+  --color-muted: #9CA3AF;
+  --color-border: #374151;
+  --chart-1: 142 71% 55%;
+  --chart-2: 217 91% 70%;
+  --muted: 217 12% 65%;
+  --border: 217 19% 27%;
 }
 
 html, body {
@@ -80,4 +97,13 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="date"] {
   color-scheme: light;
+}
+
+.dark select {
+  background-color: #1E1E1E;
+  color-scheme: dark;
+}
+
+.dark input[type="date"] {
+  color-scheme: dark;
 }

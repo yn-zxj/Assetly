@@ -52,12 +52,12 @@ export default function Logs() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/settings')}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <ScrollText className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold text-gray-800">运行日志</h1>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">运行日志</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -87,7 +87,7 @@ export default function Logs() {
             className={`text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition-colors ${
               filter === level
                 ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {level === 'all' ? '全部' : LEVEL_CONFIG[level].label}
@@ -103,17 +103,17 @@ export default function Logs() {
       {/* Log list */}
       <div
         ref={scrollRef}
-        className="bg-white rounded-[20px] border border-border/50 overflow-y-auto"
+        className="bg-white dark:bg-[#1E1E1E] rounded-[20px] border border-border/50 overflow-y-auto"
         style={{ maxHeight: 'calc(100vh - 220px)' }}
       >
         {filteredLogs.length === 0 ? (
-          <div className="p-8 text-center text-gray-400 text-sm">
+          <div className="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">
             <ScrollText className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p>暂无日志</p>
             <p className="text-xs mt-1 opacity-60">日志会在应用运行过程中自动记录</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {filteredLogs.map((log, idx) => {
               const config = LEVEL_CONFIG[log.level];
               const Icon = config.icon;
@@ -124,14 +124,14 @@ export default function Logs() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className={`text-[10px] font-bold ${config.color}`}>{config.label}</span>
-                        <span className="text-[10px] text-gray-400">{formatTime(log.timestamp)}</span>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">{formatTime(log.timestamp)}</span>
                         {log.source && (
-                          <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 rounded">
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500 bg-gray-100 px-1.5 rounded">
                             {log.source}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-700 break-words">{log.message}</p>
+                      <p className="text-xs text-gray-700 dark:text-gray-300 break-words">{log.message}</p>
                     </div>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export default function Logs() {
         )}
       </div>
 
-      <p className="text-[10px] text-gray-400 mt-3 text-center">
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-3 text-center">
         显示最近 {logs.length} 条内存日志 · 完整日志文件保存在应用日志目录
       </p>
     </div>

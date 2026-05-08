@@ -44,21 +44,21 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-[20px] shadow-sm border border-border/50 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+      className="bg-white dark:bg-[#1E1E1E] rounded-[20px] shadow-sm border border-border/50 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
     >
       {/* Top section with icon and status */}
       <div className="p-4 pb-2">
         <div className="flex items-start justify-between mb-3">
-          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">
+          <div className="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-3xl">
             {emoji}
           </div>
           <span
             className={`text-xs px-2.5 py-1 rounded-full shrink-0 ${
               item.status === 'active'
-                ? 'bg-green-50 text-green-600'
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                 : item.status === 'archived'
-                ? 'bg-yellow-50 text-yellow-600'
-                : 'bg-gray-100 text-gray-500'
+                ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
             }`}
           >
             {ITEM_STATUS_LABELS[item.status]}
@@ -66,10 +66,10 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         </div>
 
         {/* Name */}
-        <h3 className="text-base font-semibold text-gray-800 truncate mb-1">{item.name}</h3>
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 truncate mb-1">{item.name}</h3>
 
         {/* Price + days */}
-        <p className="text-xs text-gray-400 mb-3">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
           {formatCurrencyFull(item.purchase_price * item.quantity, currencySymbol)}
           {days > 0 && (
             <span className="ml-1">· 已使用 {days} 天</span>
@@ -81,7 +81,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
       {dailyCost !== null && (
         <div className="px-4 pb-4">
           <div className="bg-primary/5 rounded-xl px-3 py-2 flex items-center justify-between">
-            <span className="text-xs text-gray-500">成本</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">成本</span>
             <span className="text-sm font-bold text-primary font-mono">
               {formatCurrencyFull(dailyCost, currencySymbol)}/天
             </span>

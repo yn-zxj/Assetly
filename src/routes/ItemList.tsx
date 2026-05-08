@@ -71,7 +71,7 @@ export default function ItemList() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold text-gray-800">我的物品</h1>
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">我的物品</h1>
         <button
           onClick={() => navigate('/items/new')}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-[12px] text-sm font-medium hover:opacity-90 transition-opacity"
@@ -82,22 +82,22 @@ export default function ItemList() {
       </div>
 
       {/* Stats Overview */}
-      <div className="bg-white rounded-[20px] p-4 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 mb-4">
         <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-2xl font-bold text-gray-800 font-mono">
+          <span className="text-2xl font-bold text-gray-800 dark:text-gray-100 font-mono">
             {formatCurrencyFull(stats.totalValue, currencySymbol)}
           </span>
           <span className="text-xs text-muted">总资产</span>
         </div>
         {stats.totalDailyCost > 0 && (
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
             日均成本 <span className="font-mono font-medium text-primary">{formatCurrencyFull(stats.totalDailyCost, currencySymbol)}</span>
           </p>
         )}
         <div className="flex gap-4 text-xs text-gray-500">
-          <span>服役中 <strong className="text-gray-800">{stats.active}</strong></span>
-          <span>已闲置 <strong className="text-gray-800">{stats.archived}</strong></span>
-          <span>已处置 <strong className="text-gray-800">{stats.disposed}</strong></span>
+          <span>服役中 <strong className="text-gray-800 dark:text-gray-100">{stats.active}</strong></span>
+          <span>已闲置 <strong className="text-gray-800 dark:text-gray-100">{stats.archived}</strong></span>
+          <span>已处置 <strong className="text-gray-800 dark:text-gray-100">{stats.disposed}</strong></span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export default function ItemList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索物品名称..."
-            className="w-full pl-9 pr-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
           />
         </div>
         <div className="w-28">
@@ -130,7 +130,7 @@ export default function ItemList() {
           className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
             !filter.category_id
               ? 'bg-gray-800 text-white'
-              : 'bg-white text-gray-600 border border-border'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-border'
           }`}
         >
           全部
@@ -142,7 +142,7 @@ export default function ItemList() {
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filter.category_id === cat.id
                 ? 'bg-gray-800 text-white'
-                : 'bg-white text-gray-600 border border-border'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-border'
             }`}
           >
             {cat.name}

@@ -143,7 +143,7 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps
 
       if (labelFormatter) {
         return (
-          <div className={cn('font-medium', labelClassName)}>
+          <div className={cn('font-medium text-gray-800 dark:text-gray-100', labelClassName)}>
             {labelFormatter(String(value ?? ''), payload as any[])}
           </div>
         );
@@ -153,7 +153,7 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps
         return null;
       }
 
-      return <div className={cn('font-medium', labelClassName)}>{value}</div>;
+      return <div className={cn('font-medium text-gray-800 dark:text-gray-100', labelClassName)}>{value}</div>;
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
 
     if (!active || !payload?.length) {
@@ -166,7 +166,7 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps
       <div
         ref={ref}
         className={cn(
-          'grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-white px-2.5 py-1.5 text-xs shadow-xl',
+          'grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-white dark:bg-[#1E1E1E] px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 shadow-xl',
           className
         )}
       >
@@ -220,10 +220,10 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted">{itemConfig?.label || item.name}</span>
+                        <span className="text-gray-500 dark:text-gray-400">{itemConfig?.label || item.name}</span>
                       </div>
                       {item.value && (
-                        <span className="font-mono font-medium tabular-nums">
+                        <span className="font-mono font-medium tabular-nums text-gray-800 dark:text-gray-100">
                           {item.value.toLocaleString()}
                         </span>
                       )}

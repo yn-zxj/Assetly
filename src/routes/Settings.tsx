@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import dayjs from 'dayjs';
-import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap, Cloud, CloudUpload, CloudDownload, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, Upload, Check, Palette, DollarSign, Info, FileJson, ScrollText, Share2, Sparkles, Eye, EyeOff, Loader2, Zap, Cloud, CloudUpload, CloudDownload, ChevronDown, ChevronRight, Sun, Moon, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { exportToJSON, importFromJSON } from '../services/exportService';
@@ -14,7 +14,7 @@ import { formatDateTime } from '../utils/dateHelper';
 export default function Settings() {
   const navigate = useNavigate();
   const {
-    themeColor, currencySymbol, setThemeColor, setCurrencySymbol,
+    themeColor, currencySymbol, colorMode, setThemeColor, setCurrencySymbol, setColorMode,
     ai_enabled, ai_api_url, ai_api_key, ai_model_mode, ai_text_model,
     ai_vision_api_url, ai_vision_api_key, ai_vision_model,
     setAIEnabled, setAIApiUrl, setAIApiKey, setAIModelMode, setAITextModel,
@@ -288,13 +288,42 @@ export default function Settings() {
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
-      <h1 className="text-xl font-bold text-gray-800 mb-5">设置</h1>
+      <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-5">设置</h1>
+
+      {/* Appearance Mode */}
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sun className="w-5 h-5 text-primary" />
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">外观</h2>
+          </div>
+          <div className="flex gap-1">
+            {([
+              { value: 'light' as const, Icon: Sun },
+              { value: 'dark' as const, Icon: Moon },
+              { value: 'system' as const, Icon: Monitor },
+            ]).map(({ value, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setColorMode(value)}
+                className={`p-2 rounded-[10px] transition-colors ${
+                  colorMode === value
+                    ? 'bg-primary text-white'
+                    : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Theme Color */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <Palette className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">主题色</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">主题色</h2>
         </div>
         <div className="flex flex-wrap gap-3">
           {THEME_PRESETS.map((preset) => (
@@ -302,7 +331,7 @@ export default function Settings() {
               key={preset.color}
               onClick={() => setThemeColor(preset.color)}
               className={`flex-1 min-w-[3.5rem] max-w-[4.5rem] flex flex-col items-center gap-1.5 p-2 rounded-[12px] transition-colors ${
-                themeColor === preset.color ? 'bg-gray-100' : 'hover:bg-gray-50'
+                themeColor === preset.color ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
             >
               <div
@@ -313,17 +342,17 @@ export default function Settings() {
               >
                 {themeColor === preset.color && <Check className="w-5 h-5 text-white" />}
               </div>
-              <span className="text-xs text-gray-500">{preset.name}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{preset.name}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Currency */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <DollarSign className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">货币符号</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">货币符号</h2>
         </div>
         <div className="flex gap-2">
           {CURRENCY_OPTIONS.map((symbol) => (
@@ -333,7 +362,7 @@ export default function Settings() {
               className={`w-12 h-12 rounded-[12px] text-lg font-mono font-bold transition-colors ${
                 currencySymbol === symbol
                   ? 'bg-primary text-white'
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               {symbol}
@@ -343,18 +372,18 @@ export default function Settings() {
       </div>
 
       {/* Data Export */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <Download className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">数据导出</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">数据导出</h2>
         </div>
-        <p className="text-xs text-gray-400 mb-3">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
           {isMobile ? '点击后会弹出分享面板，可以选择保存到文件或发送给他人' : '导出数据会保存到下载目录中'}
         </p>
         <button
           onClick={() => handleExport()}
           disabled={exporting}
-          className="w-full py-3 border border-border rounded-[12px] text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 border border-border rounded-[12px] text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
           {isMobile ? <Share2 className="w-4 h-4" /> : <FileJson className="w-4 h-4" />}
           {isMobile ? '分享导出' : '导出 JSON'}
@@ -367,12 +396,12 @@ export default function Settings() {
       </div>
 
       {/* Data Import */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <Upload className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">数据导入</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">数据导入</h2>
         </div>
-        <p className="text-xs text-gray-400 mb-3">选择之前导出的 JSON 文件进行恢复，导入后会刷新页面</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">选择之前导出的 JSON 文件进行恢复，导入后会刷新页面</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -396,22 +425,22 @@ export default function Settings() {
       </div>
 
       {/* WebDAV Sync */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 mb-4">
         <button
           type="button"
           onClick={() => setWebdavExpanded(!webdavExpanded)}
-          className="w-full flex items-center justify-between mb-4"
+          className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
             <Cloud className="w-5 h-5 text-primary" />
-            <h2 className="text-sm font-semibold text-gray-700">WebDAV 同步</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">WebDAV 同步</h2>
           </div>
           {webdavExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
         </button>
 
         {webdavExpanded && (<>
-        <div className="flex items-center justify-between mb-4">
-          <label className="text-sm text-gray-600">启用 WebDAV</label>
+        <div className="flex items-center justify-between mt-4 mb-4">
+          <label className="text-sm text-gray-600 dark:text-gray-300">启用 WebDAV</label>
           <button
             type="button"
             onClick={() => setWebDAVEnabled(!webdav_enabled)}
@@ -423,36 +452,36 @@ export default function Settings() {
 
         {webdav_enabled && (
           <div className="space-y-3">
-            <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-[12px] space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">服务器地址</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">服务器地址</label>
                 <input
                   type="text"
                   value={webdav_server_url}
                   onChange={(e) => setWebDAVServerUrl(e.target.value)}
                   placeholder="https://dav.example.com"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">用户名</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">用户名</label>
                 <input
                   type="text"
                   value={webdav_username}
                   onChange={(e) => setWebDAVUsername(e.target.value)}
                   placeholder="username"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">密码</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">密码</label>
                 <div className="relative">
                   <input
                     type={showWebDAVPassword ? 'text' : 'password'}
                     value={webdav_password}
                     onChange={(e) => setWebDAVPassword(e.target.value)}
                     placeholder="password"
-                    className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 pr-10 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                   <button
                     type="button"
@@ -464,13 +493,13 @@ export default function Settings() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">远程路径</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">远程路径</label>
                 <input
                   type="text"
                   value={webdav_remote_path}
                   onChange={(e) => setWebDAVRemotePath(e.target.value)}
                   placeholder="/assetly-backup.json"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -493,7 +522,7 @@ export default function Settings() {
               <button
                 onClick={handleWebDAVUpload}
                 disabled={webdavSyncLoading || !webdav_server_url || !webdav_username || !webdav_password}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-[12px] text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-[12px] text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
               >
                 <CloudUpload className="w-4 h-4" />
                 {webdavSyncLoading ? '同步中...' : '上传备份'}
@@ -515,12 +544,12 @@ export default function Settings() {
             )}
 
             {webdav_last_sync_at && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
                 上次同步: {formatDateTime(webdav_last_sync_at)}
               </p>
             )}
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               密码仅存储在本地，不会上传到任何服务器
             </p>
           </div>
@@ -529,15 +558,15 @@ export default function Settings() {
       </div>
 
       {/* Logs */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <ScrollText className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">运行日志</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">运行日志</h2>
         </div>
-        <p className="text-xs text-gray-400 mb-3">查看应用运行日志，便于排查问题</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">查看应用运行日志，便于排查问题</p>
         <button
           onClick={() => navigate('/logs')}
-          className="w-full py-3 border border-border rounded-[12px] text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 border border-border rounded-[12px] text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
         >
           <ScrollText className="w-4 h-4" />
           查看日志
@@ -545,23 +574,23 @@ export default function Settings() {
       </div>
 
       {/* AI Config */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50 mb-4">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 mb-4">
         <button
           type="button"
           onClick={() => setAiExpanded(!aiExpanded)}
-          className="w-full flex items-center justify-between mb-4"
+          className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-sm font-semibold text-gray-700">AI 配置</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">AI 配置</h2>
           </div>
           {aiExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
         </button>
 
         {aiExpanded && (<>
         {/* AI Enabled Toggle */}
-        <div className="flex items-center justify-between mb-4">
-          <label className="text-sm text-gray-600">启用 AI 识别</label>
+        <div className="flex items-center justify-between mt-4 mb-4">
+          <label className="text-sm text-gray-600 dark:text-gray-300">启用 AI 识别</label>
           <button
             type="button"
             onClick={() => setAIEnabled(!ai_enabled)}
@@ -583,7 +612,7 @@ export default function Settings() {
                   className={`flex-1 py-2 rounded-[10px] text-xs font-medium transition-colors ${
                     ai_model_mode === 'single'
                       ? 'bg-primary text-white'
-                      : 'bg-gray-50 text-gray-600 border border-border hover:bg-gray-100'
+                      : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-border hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   多模态
@@ -594,7 +623,7 @@ export default function Settings() {
                   className={`flex-1 py-2 rounded-[10px] text-xs font-medium transition-colors ${
                     ai_model_mode === 'separate'
                       ? 'bg-primary text-white'
-                      : 'bg-gray-50 text-gray-600 border border-border hover:bg-gray-100'
+                      : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-border hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   单模型
@@ -608,27 +637,27 @@ export default function Settings() {
             </div>
 
             {/* Text Model Config */}
-            <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
-              <p className="text-xs font-medium text-gray-700">文本模型配置</p>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-[12px] space-y-3">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-200">文本模型配置</p>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">API Base URL</label>
                 <input
                   type="text"
                   value={ai_api_url}
                   onChange={(e) => setAIApiUrl(e.target.value)}
                   placeholder="https://api.openai.com/v1"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">API Key</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">API Key</label>
                 <div className="relative">
                   <input
                     type={showApiKey ? 'text' : 'password'}
                     value={ai_api_key}
                     onChange={(e) => setAIApiKey(e.target.value)}
                     placeholder="sk-..."
-                    className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 pr-10 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                   <button
                     type="button"
@@ -640,40 +669,40 @@ export default function Settings() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">模型名称</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">模型名称</label>
                 <input
                   type="text"
                   value={ai_text_model}
                   onChange={(e) => setAITextModel(e.target.value)}
                   placeholder="gpt-4o-mini"
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
             </div>
 
             {/* Vision Model Config (separate mode) */}
             {ai_model_mode === 'separate' && (
-              <div className="p-3 bg-gray-50 rounded-[12px] space-y-3">
-                <p className="text-xs font-medium text-gray-700">图像识别模型配置</p>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-[12px] space-y-3">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-200">图像识别模型配置</p>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">API Base URL</label>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">API Base URL</label>
                   <input
                     type="text"
                     value={ai_vision_api_url}
                     onChange={(e) => setAIVisionApiUrl(e.target.value)}
                     placeholder="https://api.openai.com/v1"
-                    className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">API Key</label>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">API Key</label>
                   <div className="relative">
                     <input
                       type={showApiKey ? 'text' : 'password'}
                       value={ai_vision_api_key}
                       onChange={(e) => setAIVisionApiKey(e.target.value)}
                       placeholder="sk-..."
-                      className="w-full px-3 py-2.5 pr-10 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                      className="w-full px-3 py-2.5 pr-10 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                     />
                     <button
                       type="button"
@@ -685,13 +714,13 @@ export default function Settings() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">模型名称</label>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">模型名称</label>
                   <input
                     type="text"
                     value={ai_vision_model}
                     onChange={(e) => setAIVisionModel(e.target.value)}
                     placeholder="gpt-4o"
-                    className="w-full px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -723,7 +752,7 @@ export default function Settings() {
               </div>
             )}
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               API Key 仅存储在本地，不会上传到任何服务器
             </p>
           </div>
@@ -732,14 +761,14 @@ export default function Settings() {
       </div>
 
       {/* About */}
-      <div className="bg-white rounded-[20px] p-5 border border-border/50">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-5 border border-border/50">
         <div className="flex items-center gap-2 mb-3">
           <Info className="w-5 h-5 text-primary" />
-          <h2 className="text-sm font-semibold text-gray-700">关于</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">关于</h2>
         </div>
-        <div className="text-sm text-gray-500 space-y-1">
+        <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
           <p>Assetly - 家庭物品管家</p>
-          <p>版本 {__APP_VERSION__}</p>
+          <p>版本 <a href="https://github.com/yn-zxj/Assetly/releases" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{__APP_VERSION__}</a></p>
           <p className="text-xs text-muted mt-2">基于 Tauri 2.0 构建，数据本地存储，隐私安全</p>
         </div>
       </div>

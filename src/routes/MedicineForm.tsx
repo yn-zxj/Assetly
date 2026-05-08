@@ -149,10 +149,10 @@ export default function MedicineForm() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-[10px] hover:bg-gray-100">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-gray-800">
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-xl font-bold text-gray-800">{isEdit ? '编辑药品' : '添加药品'}</h1>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">{isEdit ? '编辑药品' : '添加药品'}</h1>
           {aiFilled && (
             <span className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
               <Sparkles className="w-3 h-3" />
@@ -169,22 +169,22 @@ export default function MedicineForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Basic Info */}
-        <div className="bg-white rounded-[20px] p-4 border border-border/50 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">基本信息</h2>
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">基本信息</h2>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">药品名称 *</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">药品名称 *</label>
             <input
               type="text" value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
               placeholder="如: 布洛芬缓释胶囊"
-              className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+              className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">有效期 *</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">有效期 *</label>
               <DatePicker
                 value={form.expiry_date}
                 onChange={(v) => updateField('expiry_date', v)}
@@ -193,7 +193,7 @@ export default function MedicineForm() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">类型</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">类型</label>
               <CustomSelect
                 value={form.medicine_type}
                 onChange={(v) => updateField('medicine_type', v as MedicineType)}
@@ -212,27 +212,27 @@ export default function MedicineForm() {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">服用/使用说明</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">服用/使用说明</label>
             <textarea
               value={form.dosage_instructions}
               onChange={(e) => updateField('dosage_instructions', e.target.value)}
               placeholder="如: 每日2次，每次1粒，饭后服用"
               rows={2}
-              className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary resize-none"
+              className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary resize-none"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">剩余数量</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">剩余数量</label>
               <input
                 type="number" min="0" value={form.remaining_quantity || ''}
                 onChange={(e) => updateField('remaining_quantity', Number(e.target.value))}
-                className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">单位</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">单位</label>
               <CustomSelect
                 value={form.unit}
                 onChange={(v) => updateField('unit', v)}
@@ -257,23 +257,23 @@ export default function MedicineForm() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">生产厂商</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">生产厂商</label>
               <input
                 type="text" value={form.manufacturer}
                 onChange={(e) => updateField('manufacturer', e.target.value)}
                 placeholder="厂商名称"
-                className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
               />
             </div>
           </div>
         </div>
 
         {/* Purchase Info */}
-        <div className="bg-white rounded-[20px] p-4 border border-border/50 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">购买信息</h2>
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">购买信息</h2>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">购买日期</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">购买日期</label>
               <DatePicker
                 value={form.purchase_date}
                 onChange={(v) => updateField('purchase_date', v)}
@@ -281,25 +281,25 @@ export default function MedicineForm() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">价格</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">价格</label>
               <input
                 type="number" min="0" step="0.01" value={form.purchase_price || ''}
                 onChange={(e) => updateField('purchase_price', Number(e.target.value))}
-                className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary font-mono"
+                className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary font-mono"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">存放位置</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">存放位置</label>
             <LocationPicker value={form.location_id} onChange={(id) => updateField('location_id', id)} />
           </div>
         </div>
 
         {/* Medication Reminder */}
-        <div className="bg-white rounded-[20px] p-4 border border-border/50 space-y-4">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50 space-y-4">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-gray-700">用药提醒</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">用药提醒</h2>
           </div>
 
           {/* Is Taking Toggle */}
@@ -318,7 +318,7 @@ export default function MedicineForm() {
             <>
               {/* Frequency Type */}
               <div>
-                <label className="block text-sm text-gray-600 mb-1">用药频率</label>
+                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">用药频率</label>
                 <CustomSelect
                   value={form.frequency_type}
                   onChange={(v) => updateField('frequency_type', v as FrequencyType)}
@@ -334,11 +334,11 @@ export default function MedicineForm() {
               {/* Every N Days */}
               {form.frequency_type === 'every_n_days' && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">每隔几天服用</label>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">每隔几天服用</label>
                   <input
                     type="number" min="2" value={form.frequency_days || ''}
                     onChange={(e) => updateField('frequency_days', Number(e.target.value))}
-                    className="w-full px-3 py-2.5 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[10px] text-sm outline-none focus:border-primary"
                   />
                 </div>
               )}
@@ -346,7 +346,7 @@ export default function MedicineForm() {
               {/* Week Days */}
               {form.frequency_type === 'weekly' && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-2">选择星期几服用</label>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">选择星期几服用</label>
                   <div className="flex gap-2">
                     {WEEK_DAYS.map((day) => {
                       const isSelected = form.week_days.split(',').includes(day.value);
@@ -358,7 +358,7 @@ export default function MedicineForm() {
                           className={`flex-1 py-2 rounded-[10px] text-xs font-medium transition-colors ${
                             isSelected
                               ? 'bg-primary text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           {day.label}
@@ -371,7 +371,7 @@ export default function MedicineForm() {
 
               {/* Time Slots */}
               <div>
-                <label className="block text-sm text-gray-600 mb-2">用药时间</label>
+                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">用药时间</label>
                 <div className="flex flex-wrap gap-2">
                   {form.time_slots.split(',').filter(Boolean).map((slot, index) => (
                     <div key={index} className="flex items-center gap-1 bg-gray-50 rounded-xl px-2 py-1">
@@ -402,7 +402,7 @@ export default function MedicineForm() {
 
               {/* Duration - Date Range */}
               <div>
-                <label className="block text-sm text-gray-600 mb-2">服用周期</label>
+                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">服用周期</label>
                 <div className="flex items-center gap-2">
                   <DatePicker
                     value={form.duration_start || ''}

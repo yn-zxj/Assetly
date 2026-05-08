@@ -44,7 +44,7 @@ export default function Dashboard() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto max-md:pt-[calc(1rem+env(safe-area-inset-top,0px))]">
       {/* Greeting */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">家庭物品管家</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">家庭物品管家</h1>
         <p className="text-sm text-muted mt-1">掌控你的家庭资产</p>
       </div>
 
@@ -60,21 +60,21 @@ export default function Dashboard() {
           label="物品总数"
           value={`${stats.total_items}`}
           suffix="件"
-          color="bg-blue-50 text-blue-500"
+          color="bg-blue-50 dark:bg-blue-900/30 text-blue-500"
           icon={<Package className="w-5 h-5" />}
         />
         <StatCard
           label="药品数量"
           value={`${stats.medicine_count}`}
           suffix="种"
-          color="bg-green-50 text-green-500"
+          color="bg-green-50 dark:bg-green-900/30 text-green-500"
           icon={<Pill className="w-5 h-5" />}
         />
         <StatCard
           label="过期预警"
           value={`${stats.expiring_count}`}
           suffix="项"
-          color={stats.expiring_count > 0 ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-400'}
+          color={stats.expiring_count > 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}
           icon={<AlertTriangle className="w-5 h-5" />}
         />
       </div>
@@ -84,67 +84,67 @@ export default function Dashboard() {
         {ai_enabled && (
           <button
             onClick={() => setShowAIDialog(true)}
-            className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
+            className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#1E1E1E] rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
           >
-            <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-purple-500" />
             </div>
-            <span className="text-xs font-medium text-gray-600">AI 识别</span>
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">AI 识别</span>
           </button>
         )}
         <button
           onClick={() => navigate('/items/new')}
-          className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
+          className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#1E1E1E] rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
         >
-          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
             <Plus className="w-5 h-5 text-primary" />
           </div>
-          <span className="text-xs font-medium text-gray-600">添加物品</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">添加物品</span>
         </button>
         <button
           onClick={() => navigate('/medicine/new')}
-          className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
+          className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#1E1E1E] rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
         >
-          <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center">
             <Pill className="w-5 h-5 text-green-500" />
           </div>
-          <span className="text-xs font-medium text-gray-600">添加药品</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">添加药品</span>
         </button>
         <button
           onClick={() => navigate('/statistics')}
-          className="flex flex-col items-center gap-2 p-4 bg-white rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
+          className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#1E1E1E] rounded-[20px] border border-border/50 hover:shadow-md transition-shadow"
         >
-          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-blue-500" />
           </div>
-          <span className="text-xs font-medium text-gray-600">查看统计</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">查看统计</span>
         </button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {/* Expiring Medicines */}
-        <div className="bg-white rounded-[20px] p-4 border border-border/50">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">药品预警</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">药品预警</h2>
             <button onClick={() => navigate('/medicine')} className="text-xs text-primary flex items-center gap-0.5">
               查看全部 <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           {expiringMedicines.length === 0 ? (
-            <p className="text-sm text-gray-400 py-6 text-center">暂无过期预警</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 py-6 text-center">暂无过期预警</p>
           ) : (
             <div className="space-y-2.5">
               {expiringMedicines.slice(0, 5).map((med) => (
                 <div
                   key={med.id}
                   onClick={() => navigate(`/medicine/${med.item_id}/edit`)}
-                  className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-[12px] p-2 -mx-2 transition-colors"
+                  className="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-[12px] p-2 -mx-2 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Pill className={`w-4 h-4 shrink-0 ${
                       getExpiryStatus(med.expiry_date) === 'expired' ? 'text-red-400' : 'text-amber-400'
                     }`} />
-                    <span className="text-sm text-gray-700 truncate">{med.name}</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{med.name}</span>
                   </div>
                   <ExpiryBadge expiryDate={med.expiry_date} />
                 </div>
@@ -155,9 +155,9 @@ export default function Dashboard() {
 
         {/* Currently Taking Medicines */}
         {takingMedicines.length > 0 && (
-          <div className="bg-white rounded-[20px] p-4 border border-border/50">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-700">正在服用</h2>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">正在服用</h2>
               <button onClick={() => navigate('/medicine')} className="text-xs text-primary flex items-center gap-0.5">
                 查看全部 <ArrowRight className="w-3 h-3" />
               </button>
@@ -167,11 +167,11 @@ export default function Dashboard() {
                 <div
                   key={med.id}
                   onClick={() => navigate(`/medicine/${med.item_id}/edit`)}
-                  className="cursor-pointer hover:bg-gray-50 rounded-[12px] p-2 -mx-2 transition-colors"
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-[12px] p-2 -mx-2 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <Clock className="w-4 h-4 shrink-0 text-green-500" />
-                    <span className="text-sm font-medium text-gray-800 truncate">{med.name}</span>
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{med.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 ml-6">
                     {med.frequency_type === 'daily' && <span>每天</span>}
@@ -193,7 +193,7 @@ export default function Dashboard() {
                     )}
                   </div>
                   {med.duration_start && med.duration_end && (
-                    <div className="text-xs text-gray-400 ml-6 mt-0.5">
+                    <div className="text-xs text-gray-400 dark:text-gray-500 ml-6 mt-0.5">
                       {med.duration_start} 至 {med.duration_end}
                     </div>
                   )}
@@ -204,15 +204,15 @@ export default function Dashboard() {
         )}
 
         {/* Category Distribution */}
-        <div className="bg-white rounded-[20px] p-4 border border-border/50">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">资产分布</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">资产分布</h2>
             <button onClick={() => navigate('/statistics')} className="text-xs text-primary flex items-center gap-0.5">
               详细报表 <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           {categoryDistribution.length === 0 ? (
-            <p className="text-sm text-gray-400 py-6 text-center">暂无数据</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 py-6 text-center">暂无数据</p>
           ) : (
             <PieChart
               data={categoryDistribution.slice(0, 5)}
@@ -235,12 +235,12 @@ function StatCard({ label, value, suffix, color, icon }: {
   label: string; value: string; suffix?: string; color: string; icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-[20px] p-4 border border-border/50">
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-[20px] p-4 border border-border/50">
       <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-2.5 ${color}`}>
         {icon}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-xl font-bold text-gray-800 font-mono">{value}</span>
+        <span className="text-xl font-bold text-gray-800 dark:text-gray-100 font-mono">{value}</span>
         {suffix && <span className="text-xs text-muted">{suffix}</span>}
       </div>
       <p className="text-xs text-muted mt-0.5">{label}</p>

@@ -109,11 +109,11 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
       {/* Trigger */}
       <div
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-border rounded-[10px] text-sm cursor-pointer hover:border-gray-300 transition-colors ${
+        className={`w-full flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-gray-800 border border-border rounded-[10px] text-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-colors ${
           open ? 'border-primary ring-1 ring-primary/20' : ''
         }`}
       >
-        <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+        <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
         <span className={displayValue ? 'text-gray-800' : 'text-gray-400'}>
           {displayValue || placeholder}
         </span>
@@ -130,7 +130,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
           />
           {/* Calendar card */}
           <div
-            className="relative bg-white rounded-2xl w-[min(320px,90vw)] p-4 shadow-2xl"
+            className="relative bg-white dark:bg-[#1E1E1E] rounded-2xl w-[min(320px,90vw)] p-4 shadow-2xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -138,9 +138,9 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
               <button
                 type="button"
                 onClick={handlePrev}
-                className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 transition-colors"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-500" />
+                <ChevronLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
               <button
                 type="button"
@@ -148,7 +148,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
                 className={`text-base font-semibold px-3 py-1 rounded-xl transition-colors ${
                   mode === 'years'
                     ? 'text-gray-800'
-                    : 'text-gray-800 hover:bg-gray-100 active:bg-gray-200'
+                    : 'text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200'
                 }`}
                 disabled={mode === 'years'}
               >
@@ -157,9 +157,9 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
               <button
                 type="button"
                 onClick={handleNext}
-                className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 transition-colors"
               >
-                <ChevronRight className="w-5 h-5 text-gray-500" />
+                <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
@@ -168,7 +168,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
               <>
                 <div className="grid grid-cols-7 mb-1">
                   {WEEKDAYS.map((d) => (
-                    <div key={d} className="text-center text-xs text-gray-400 font-medium py-1.5">
+                    <div key={d} className="text-center text-xs text-gray-400 dark:text-gray-500 font-medium py-1.5">
                       {d}
                     </div>
                   ))}
@@ -189,7 +189,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
                             ? 'bg-primary text-white font-medium'
                             : isToday
                             ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200'
                         }`}
                       >
                         {day}
@@ -216,7 +216,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
                           ? 'bg-primary text-white'
                           : isCurrentMonth
                           ? 'bg-primary/10 text-primary'
-                          : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200'
                       }`}
                     >
                       {label}
@@ -242,7 +242,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
                           ? 'bg-primary text-white'
                           : isCurrentYear
                           ? 'bg-primary/10 text-primary'
-                          : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200'
                       }`}
                     >
                       {y}
@@ -264,7 +264,7 @@ export default function DatePicker({ value, onChange, placeholder = '选择日�
               <button
                 type="button"
                 onClick={() => { onChange(''); setOpen(false); }}
-                className="flex-1 py-2 text-sm text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                className="flex-1 py-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 transition-colors"
               >
                 清除
               </button>

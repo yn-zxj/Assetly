@@ -136,18 +136,18 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-[24px] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl">
+      <div className="relative bg-white dark:bg-[#1E1E1E] rounded-[24px] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border/50">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-semibold text-gray-800">AI 智能识别</h2>
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">AI 智能识别</h2>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
@@ -155,7 +155,7 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
         <div className="p-5 overflow-y-auto">
           {mode === 'select' && (
             <div className="space-y-3">
-              <p className="text-sm text-gray-500 mb-4">选择识别方式，AI 将自动判断是普通物品还是药品</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">选择识别方式，AI 将自动判断是普通物品还是药品</p>
               <button
                 onClick={() => setMode('text')}
                 className="w-full flex items-center gap-4 p-4 rounded-[16px] border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors text-left"
@@ -164,8 +164,8 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
                   <Type className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">文字描述</p>
-                  <p className="text-xs text-gray-400 mt-0.5">输入物品或药品的文字描述</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">文字描述</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">输入物品或药品的文字描述</p>
                 </div>
               </button>
               <button
@@ -176,8 +176,8 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
                   <Image className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">图片识别</p>
-                  <p className="text-xs text-gray-400 mt-0.5">拍照或上传物品/药品图片</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">图片识别</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">拍照或上传物品/药品图片</p>
                 </div>
               </button>
             </div>
@@ -192,7 +192,7 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
                 ← 返回选择
               </button>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   描述你要添加的物品或药品
                 </label>
                 <textarea
@@ -200,7 +200,7 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
                   onChange={(e) => setText(e.target.value)}
                   placeholder="例如：一盒布洛芬缓释胶囊，24粒装，有效期到2026年8月，用于缓解头痛..."
                   rows={5}
-                  className="w-full px-3 py-2.5 bg-white border border-border rounded-[12px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-border rounded-[12px] text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none"
                 />
               </div>
               <button
@@ -236,10 +236,10 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full aspect-[4/3] rounded-[16px] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-3 hover:border-primary hover:bg-primary/5 transition-colors"
                 >
-                  <Image className="w-10 h-10 text-gray-400" />
+                  <Image className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                   <div className="text-center">
-                    <p className="text-sm text-gray-600">点击选择图片</p>
-                    <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG，最大 5MB</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">点击选择图片</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">支持 JPG、PNG，最大 5MB</p>
                   </div>
                 </button>
               ) : (
@@ -279,22 +279,22 @@ export default function AIRecognizeDialog({ open, onClose }: AIRecognizeDialogPr
           )}
 
           {loading && (mode === 'text' || mode === 'image') && (
-            <div className="mt-4 rounded-[12px] border border-border bg-gray-50 overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2 text-xs text-gray-500 border-b border-border/60 bg-white">
+            <div className="mt-4 rounded-[12px] border border-border bg-gray-50 dark:bg-gray-800/50 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-border/60 bg-white dark:bg-[#1E1E1E]">
                 <div className="flex items-center gap-1.5">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                   <span>AI 正在输出</span>
-                  <span className="text-gray-400">· {(elapsed / 1000).toFixed(1)}s</span>
+                  <span className="text-gray-400 dark:text-gray-500">· {(elapsed / 1000).toFixed(1)}s</span>
                   {streamText && (
-                    <span className="text-gray-400">· {streamText.length} 字符</span>
+                    <span className="text-gray-400 dark:text-gray-500">· {streamText.length} 字符</span>
                   )}
                 </div>
               </div>
               <div
                 ref={streamBoxRef}
-                className="px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre-wrap break-words max-h-40 overflow-y-auto"
+                className="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono whitespace-pre-wrap break-words max-h-40 overflow-y-auto"
               >
-                {streamText || <span className="text-gray-400">等待模型响应…</span>}
+                {streamText || <span className="text-gray-400 dark:text-gray-500">等待模型响应…</span>}
               </div>
             </div>
           )}
