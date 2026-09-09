@@ -77,7 +77,7 @@ Android 应用标识继续使用旧版的 `com.assetly.home`。使用与旧版�
 
 ### 环境
 
-- Flutter stable，Dart `>=3.11.5 <4.0.0`
+- Flutter `3.41.7`、Dart `>=3.11.5 <4.0.0`
 - Android Studio / Android SDK
 - JDK 17
 
@@ -155,7 +155,7 @@ assetly/
 发布新版本前先更新 `pubspec.yaml` 的版本号，然后创建同名标签：
 
 ```bash
-git tag -a v1.3.0 -m "Assetly Flutter v1.3.0"
+git tag -a v1.3.1 -m "Assetly Flutter v1.3.1"
 git push origin main --follow-tags
 ```
 
