@@ -1,9 +1,0 @@
-{
-  "bundle": {
-    "macOS": {
-      "signingIdentity": "-",
-      "entitlements": null,
-      "exceptionDomain": ""
-    }
-  }
-}

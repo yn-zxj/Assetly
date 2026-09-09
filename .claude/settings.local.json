@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(./bump-version.sh *)",
-      "Bash(npx tsc *)",
-      "Bash(npx vite *)"
-    ]
-  }
-}

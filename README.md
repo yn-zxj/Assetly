@@ -1,292 +1,199 @@
-# Assetly - 家庭物品管家
+# Assetly · 物语
 
 <p align="center">
-  <img src="src-tauri/icons/128x128.png" alt="Assetly Logo" width="96">
+  <img src="assets/app-icon.png" alt="Assetly 图标" width="112">
 </p>
 
 <p align="center">
-  <b>Assetly</b> 是一款跨平台的家庭物品管理应用，帮助你记录、分类、追踪家中的所有资产。
+  Local-first 的家庭物品、收纳空间与家庭药箱管理应用。
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Tauri-2.0-24C8D8?logo=tauri" alt="Tauri">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss" alt="Tailwind">
-  <img src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite" alt="SQLite">
+  <img src="https://img.shields.io/badge/Flutter-stable-02569B?logo=flutter" alt="Flutter stable">
+  <img src="https://img.shields.io/badge/Android-supported-3DDC84?logo=android" alt="Android supported">
+  <img src="https://img.shields.io/badge/data-local--first-10B981" alt="Local-first">
+  <a href="https://github.com/yn-zxj/Assetly/actions/workflows/android-release.yml"><img src="https://github.com/yn-zxj/Assetly/actions/workflows/android-release.yml/badge.svg" alt="Android CI and Release"></a>
 </p>
 
----
+Assetly 使用 Flutter 重构，重点改善原 Tauri 客户端在手机端的交互、性能和系统能力适配。界面采用接近 shadcn/ui 的黑白灰层次、细描边、圆角卡片和 Lucide 线性图标。
 
-## 应用截图
+> 旧版 Tauri + React 工程保存在 `v0.3.3` 和 `legacy-tauri-v0.3.3` 标签中；当前 `main` 分支为 Flutter 版本。
 
-<p align="center">
-  <img src="img/home.jpg" width="24%" />
-  <img src="img/goods.jpg" width="24%" />
-  <img src="img/medicine.jpg" width="24%" />
-  <img src="img/statistics.jpg" width="24%" />
-</p>
-<p align="center">
-  <img src="img/settings.jpg" width="24%" />
-  <img src="img/logs.jpg" width="24%" />
-  <img src="img/tips.jpg" width="24%" />
-</p>
+## 功能
 
----
+### 家庭物品
 
-## 功能特性
+- 新增、修改、删除、搜索及状态筛选
+- 自定义物品 Emoji 图标、分类和存放空间
+- 购买日期、价格、条码、质保日期和退役/转售记录
+- 资产详情、使用天数和日均成本
+- 首页近 6 个月新增资产金额统计及完整月份明细
 
-### 物品管理
+### 家庭药箱
 
-- **物品录入** - 记录物品名称、自定义 Emoji 图标、分类、存放位置、购买日期、价格、数量、状态
-- **状态追踪** - 支持"服役中"、"已闲置"、"已处置"三种状态
-- **智能搜索** - 按名称快速搜索物品
-- **多维筛选** - 按分类标签、状态筛选物品列表
-- **日均成本** - 自动计算每件物品及总资产的日均使用成本
+- 药品详情、新增、修改和删除
+- 有效期、药品类型、库存单位、厂商及服用/使用说明
+- “正在服用”开关、多个用药时间和服用周期
+- 首页快捷打卡、库存扣减、过期和低库存预警
+- Android 本地通知与精确提醒
 
-### 分类管理
+### 收纳空间
 
-- 8 个默认分类（电子产品、家具、厨房、衣物鞋包、图书文具、药品保健、工具器材、其他）
-- 支持自定义分类，可设置图标和主题色
-- 分类图标自动映射为 Emoji，未设置物品图标时作为默认展示
+- 多层级空间和完整路径
+- 新增、重命名、删除及添加子空间
+- 自定义空间 Emoji 图标
+- 空间资产数量、总值和二维码收纳贴纸
 
-### 位置管理
+### 智能录入
 
-- 无限层级树形结构（如：家 > 卧室 > 衣柜）
-- 自动生成分类完整路径
-- 支持添加子位置、重命名、删除
+- 使用设备相机扫描 EAN、UPC、Code 128 和药监码
+- OpenAI-compatible 多模态接口拍照识别
+- AI 自动判断普通物品或药品，并允许保存前人工切换
+- 药品识别可回填名称、有效期、使用说明、厂商、数量、单位和条码
 
-### 药箱管理
+条码扫描只负责读取编码。本项目没有连接商业商品数据库，因此不会根据普通商品条码虚构名称、价格等信息，扫描后仍需用户补充资料。
 
-- 独立的药品管理模块
-- 药品类型：内服、外用、急救、注射、吸入、眼科、外用涂抹
-- **过期预警** - 自动检测 30 天内过期的药品并高亮提醒
-- 记录用法用量、剩余数量、生产厂家、有效期等信息
-- **用药提醒** - 支持设置用药时间，到时间自动推送通知
-  - 支持每日提醒、每隔 N 天提醒、每周特定日期提醒
-  - 可设置多个用药时间段
-  - 可设置用药起止日期
+### 数据与设置
 
-### 数据统计
+- SQLite 本机存储，首次启动为空库，不写入演示资产
+- JSON 完整导入、导出与跨设备迁移
+- WebDAV 连接测试及远程备份
+- 浅色、深色、跟随系统和多种强调色
+- 文本/视觉模型共享配置或独立配置
+- API Key 和 WebDAV 密码使用系统安全存储，不写入数据库或备份文件
 
-- **资产分布** - 环形图展示各类别资产占比
-- **消费趋势** - 平滑曲线图展示近 6 个月消费走势
-- **资产总览** - 总资产价值、物品总数、药品数量、过期预警数
+## 安装
 
-### AI 智能识别
+稳定版 APK 可从 [GitHub Releases](https://github.com/yn-zxj/Assetly/releases) 下载：
 
-- **文字识别** - 输入物品描述，AI 自动识别名称、分类、价格、数量等信息
-- **图片识别** - 拍照或上传图片，AI 自动识别物品并填充表单
-- **药品识别** - 智能区分普通物品和药品，自动提取用法用量、生产厂家、有效期等药品专属字段
-- **流式反馈** - 识别过程中实时显示 AI 输出内容，无需干等
-- **多模型支持** - 支持 OpenAI、Moonshot 等兼容 OpenAI API 的模型，文字/视觉模型可独立配置
+- `android-universal.apk`：适合不确定设备架构时安装
+- `android-arm64-v8a.apk`：适合绝大多数现代 Android 手机，体积更小
+- `android-armeabi-v7a.apk`：旧 32 位 ARM 设备
+- `android-x86_64.apk`：Android 模拟器
 
-### 数据安全
+Android 应用标识继续使用旧版的 `com.assetly.home`。使用与旧版相同的正式签名时，可覆盖升级并保留应用沙盒内的兼容数据。
 
-- **本地存储** - 所有数据保存在本地 SQLite 数据库，无需联网
-- **数据导出** - 支持 JSON 格式导出（完整备份）
-  - 桌面端：直接下载到浏览器下载目录
-  - 移动端：弹出系统分享面板，可选择保存到文件或发送给他人
-- **数据导入** - 通过 JSON 文件恢复数据，支持跨设备迁移
-- **隐私保护** - AI 识别调用第三方 API 时仅传输当前识别内容，日常数据不上传云端
+## 本地开发
 
-### 个性化
+### 环境
 
-- **主题色** - 5 种预设主题色（绿、蓝、橙、紫、粉）
-- **货币符号** - 支持 ¥、$、€、£、₩ 等多种货币
+- Flutter stable，Dart `>=3.11.5 <4.0.0`
+- Android Studio / Android SDK
+- JDK 17
 
-### 系统工具
-
-- **运行日志** - 实时查看应用运行日志，便于排查问题
-  - 支持按日志级别筛选（TRACE / DEBUG / INFO / WARN / ERROR）
-  - 自动刷新，最多保留最近 500 条内存日志
-  - 完整日志文件保存在应用日志目录
-- **通知系统** - 用药提醒等通知功能
-  - Android 原生通知渠道，支持高优先级推送
-  - 支持锁屏通知、震动提醒
-
----
-
-## 技术栈
-
-| 层级     | 技术                      | 版本         |
-| -------- | ------------------------- | ------------ |
-| 桌面框架 | Tauri                     | 2.x          |
-| 前端框架 | React                     | 19.1         |
-| 语言     | TypeScript                | 5.8          |
-| 构建工具 | Vite                      | 7.0          |
-| 样式     | Tailwind CSS              | 4.2          |
-| 状态管理 | Zustand                   | 5.0          |
-| 路由     | React Router DOM          | 7.14         |
-| 图表     | Recharts                  | 3.8          |
-| 图标     | Lucide React              | 1.8          |
-| 日期处理 | Day.js                    | 1.11         |
-| 数据库   | SQLite (Tauri SQL Plugin) | 2.4          |
-| 后端     | Rust                      | 2021 Edition |
-| 日志     | tauri-plugin-log          | 2.8          |
-| 通知     | tauri-plugin-notification | 2.3          |
-| 文件系统 | tauri-plugin-fs           | 2.5          |
-| AI 集成  | Rust reqwest + Tauri IPC  | 自定义流式   |
-
----
-
-## 快速开始
-
-### 环境要求
-
-- [Node.js](https://nodejs.org/) (LTS 版本)
-- [pnpm](https://pnpm.io/) 包管理器
-- [Rust](https://rustup.rs/) 工具链
-- [Tauri CLI](https://tauri.app/start/prerequisites/)
-
-### 安装依赖
+### 运行
 
 ```bash
-pnpm install
+flutter pub get
+flutter run
 ```
 
-### 开发模式
+### 检查与测试
 
 ```bash
-# 启动前端开发服务器 + Tauri 桌面应用
-pnpm tauri dev
+flutter analyze --no-pub
+flutter test --no-pub
 ```
 
-### 构建生产版本
-
-**桌面端（macOS / Windows / Linux）：**
+### 构建 Android APK
 
 ```bash
-# macOS Universal
-pnpm tauri build --target universal-apple-darwin
-
-# Windows
-pnpm tauri build --target x86_64-pc-windows-msvc
+flutter build apk --release
 ```
 
-**移动端（Android）：**
+构建产物位于 `build/app/outputs/flutter-apk/app-release.apk`。
 
-```bash
-# 构建 APK
-pnpm tauri android build --apk
-pnpm tauri android build --target aarch64            
-```
+## AI 配置
 
-构建产物位置：
+Assetly 不绑定某一家模型厂商，只要求服务兼容 OpenAI Chat Completions 的请求结构。
 
-- macOS: `src-tauri/target/universal-apple-darwin/release/bundle/`
-- Android: `src-tauri/gen/android/app/build/outputs/apk/universal/release/`
+1. 在“设置 → 大模型配置”中填写 API Endpoint、API Key 和模型名称。
+2. Endpoint 通常填写服务商提供的 API 根地址，例如 `https://api.example.com/v1`；应用会自动补全 `/chat/completions`。
+3. 如果文字模型不支持图片，打开“双模型分离”，单独填写视觉模型。
+4. 使用配置页的测试按钮确认连接。
 
----
+拍照识别时，只有当前压缩照片会发送至用户配置的模型服务。其他资产、药品和空间数据不会随请求上传。
+
+## 数据与兼容性
+
+- 数据库文件名：`assetly.db`
+- 当前 schema：v9
+- 支持旧版核心字段及旧版 JSON 中的 `categories`、`locations`、`items`、`medicines`
+- Flutter 版本新增条码、退役日期、转售金额及服药流水等字段
+
+升级或导入重要数据前，建议先在设置中导出一份 JSON 备份。
 
 ## 项目结构
 
-```
+```text
 assetly/
-├── src/                        # 前端源码
-│   ├── components/             # 组件
-│   │   ├── items/              # 物品相关组件
-│   │   ├── layout/             # 布局组件
-│   │   ├── medicine/           # 药品相关组件
-│   │   └── shared/             # 通用组件
-│   ├── routes/                 # 页面路由
-│   ├── services/               # 数据服务层
-│   ├── stores/                 # Zustand 状态管理
-│   ├── types/                  # TypeScript 类型定义
-│   └── utils/                  # 工具函数
-├── src-tauri/                  # Tauri / Rust 后端
-│   ├── src/                    # Rust 源码
-│   ├── capabilities/           # 权限配置
-│   └── icons/                  # 应用图标
-├── package.json                # Node.js 依赖
-├── vite.config.ts              # Vite 配置
-├── tsconfig.json               # TypeScript 配置
-└── README.md                   # 本文档
+├── lib/
+│   ├── main.dart
+│   └── src/
+│       ├── data/       # SQLite、数据模型和迁移
+│       ├── services/   # AI、WebDAV 和通知服务
+│       ├── state/      # 应用状态与业务编排
+│       ├── theme/      # 主题与视觉规范
+│       └── ui/         # 页面和通用组件
+├── assets/             # 应用图标等静态资源
+├── test/               # 逻辑与界面回归测试
+├── android/            # Android 原生工程
+├── ios/                # iOS 原生工程
+├── macos/ linux/       # 桌面端工程
+├── windows/ web/
+└── .github/workflows/  # CI 与自动发版
 ```
 
----
+## GitHub 自动发版
 
-## 数据库设计
+`.github/workflows/android-release.yml` 会执行以下工作：
 
-使用 SQLite 本地数据库，通过 Tauri SQL Plugin 访问。
+- 向 `main` 推送或创建 Pull Request：运行静态检查和自动测试
+- 推送 `v*` 标签：检查、测试、构建通用及分架构 APK，并创建 GitHub Release
+- 手动运行工作流：可指定标签并选择是否标记为预发布
 
-### 表结构
-
-| 表名            | 说明     | 关键字段                                                                              |
-| --------------- | -------- | ------------------------------------------------------------------------------------- |
-| `items`       | 物品     | name, icon, category_id, location_id, purchase_date, purchase_price, quantity, status |
-| `categories`  | 分类     | name, icon, color, sort_order                                                         |
-| `locations`   | 位置     | name, parent_id, full_path, level                                                     |
-| `medicines`   | 药品扩展 | item_id, medicine_type, expiry_date, dosage_instructions                              |
-| `settings`    | 应用设置 | key, value                                                                            |
-| `_migrations` | 迁移记录 | version, applied_at                                                                   |
-
-### 迁移历史
-
-- **v1** - 初始 schema + 默认分类和设置
-- **v2** - 物品表新增 `icon` 字段（Emoji 图标）
-
----
-
-## 开发指南
-
-### 推荐 IDE 配置
-
-- [VS Code](https://code.visualstudio.com/)
-- 插件：[Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-
-### 常用脚本
+发布新版本前先更新 `pubspec.yaml` 的版本号，然后创建同名标签：
 
 ```bash
-pnpm dev          # 启动 Vite 开发服务器
-pnpm build        # TypeScript 检查 + 生产构建
-pnpm preview      # 预览生产构建
-pnpm tauri        # Tauri CLI
+git tag -a v1.3.0 -m "Assetly Flutter v1.3.0"
+git push origin main --follow-tags
 ```
 
-### 技术要点
+### Android 正式签名
 
-- **响应式设计** - 桌面端侧边栏导航，移动端底部浮动胶囊导航
-- **自定义组件** - 底部弹窗选择器、日历选择器、时间选择器、Emoji 选择器、级联位置选择器
-- **AI 流式架构** - Rust 侧用 reqwest `bytes_stream()` + Tauri `Channel` 实现真正的 SSE 流式，绕过 `tauri-plugin-http` 的 body 缓冲问题
-- **状态管理** - 按领域拆分 Zustand Store，服务层处理所有数据库操作
-- **移动端优化**
-  - 全面屏手势适配：完全禁止侧滑返回，避免误触
-  - 安全区域适配：自动适配刘海屏、状态栏、底部安全区
-  - Touch 滚动优化：TimePicker 防抖动处理
-  - 文件分享：移动端使用系统分享面板导出文件
+仓库 Actions Secrets 支持以下配置，并与旧版流水线名称保持一致：
 
----
+| Secret | 说明 |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | JKS/Keystore 文件的 Base64 内容 |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore 密码 |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key 密码 |
 
-## 平台支持
+完整配置时流水线使用正式签名；未配置 Keystore 时仍可生成使用调试签名的测试 APK，但不适合作为长期发布版本。
 
-| 平台    | 状态             |
-| ------- | ---------------- |
-| macOS   | 支持 (Universal) |
-| Windows | 支持             |
-| Linux   | 支持             |
-| Android | 支持             |
-| iOS     | 待测试           |
+## 技术栈
 
-### Android 特殊说明
+| 范围 | 技术 |
+| --- | --- |
+| UI | Flutter、Material 3、自定义 shadcn 风格组件、Lucide Icons |
+| 数据 | SQLite / sqflite、JSON 备份、WebDAV |
+| 图表 | fl_chart |
+| 扫码 | mobile_scanner / ML Kit |
+| 通知 | flutter_local_notifications、timezone |
+| 安全存储 | flutter_secure_storage |
+| 网络与 AI | http、OpenAI-compatible Chat Completions |
 
-- **全面屏手势**：已禁用侧滑返回功能，避免与 WebView 导航冲突
-- **存储权限**：已声明外部存储读写权限，支持文件导出
-- **通知权限**：Android 13+ 需要用户手动授予通知权限
-- **后台限制**：用药提醒依赖应用前台运行，建议将应用加入电池优化白名单
+## 旧版归档
 
----
+如需查看或恢复 Tauri 版本：
 
-## 隐私说明
+```bash
+git switch --detach legacy-tauri-v0.3.3
+```
 
-- 所有数据存储在本地 SQLite 数据库中
-- 日常数据不连接任何云服务或外部 API
-- 导出文件通过系统分享或保存在本地，应用不访问外部网络
-- 应用完全离线可用（AI 识别需联网调用配置的模型 API）
-- 日志文件仅保存在本地应用目录，不会上传
+返回 Flutter 主线：
 
----
-
-## License
-
-MIT
+```bash
+git switch main
+```
