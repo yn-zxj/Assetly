@@ -7,6 +7,8 @@ import 'package:uuid/uuid.dart';
 import 'models.dart';
 
 class AppDatabase {
+  static const schemaVersion = 9;
+
   Database? _database;
   final _uuid = const Uuid();
   Database get db => _database!;
@@ -15,7 +17,7 @@ class AppDatabase {
     final path = p.join(await getDatabasesPath(), 'assetly.db');
     _database = await openDatabase(
       path,
-      version: 9,
+      version: schemaVersion,
       onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: (db, _) async {
         await _createSchema(db);
@@ -403,12 +405,12 @@ class AppDatabase {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<String> exportJson() async {
+  Future<String> exportJson({String appVersion = ''}) async {
     final result = <String, Object?>{
       '__meta__': {
         'exported_at': DateTime.now().toIso8601String(),
-        'version': '1.3.0',
-        'schema_version': 9,
+        'version': appVersion.isEmpty ? 'unknown' : appVersion,
+        'schema_version': schemaVersion,
       },
     };
     for (final table in [

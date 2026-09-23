@@ -7,13 +7,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>物语 Assetly</string>
+	<string>物语</string>
 	<key>NSCameraUsageDescription</key>
 	<string>用于扫描商品条码、药监码，以及拍摄物品照片进行智能录入。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>用于选择物品照片并进行本地压缩与智能识别。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>用于保存和导出 Assetly 生成的资产资料。</string>
+	<string>用于保存和导出物语生成的资产资料。</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,7 +21,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>assetly</string>
+	<string>物语</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

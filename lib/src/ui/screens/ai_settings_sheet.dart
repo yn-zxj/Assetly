@@ -166,7 +166,7 @@ Future<({bool ok, String message})> _test({
   }
 }
 
-class _ModelFields extends StatelessWidget {
+class _ModelFields extends StatefulWidget {
   const _ModelFields({
     required this.title,
     required this.icon,
@@ -187,77 +187,97 @@ class _ModelFields extends StatelessWidget {
   final VoidCallback onTest;
 
   @override
+  State<_ModelFields> createState() => _ModelFieldsState();
+}
+
+class _ModelFieldsState extends State<_ModelFields> {
+  bool _apiKeyVisible = false;
+
+  @override
   Widget build(BuildContext context) => ShadCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 18),
+            Icon(widget.icon, size: 18),
             const SizedBox(width: 8),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(widget.title, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
         const SizedBox(height: 12),
         TextField(
-          controller: endpoint,
+          controller: widget.endpoint,
           keyboardType: TextInputType.url,
           decoration: const InputDecoration(labelText: 'API Endpoint'),
         ),
         const SizedBox(height: 9),
         TextField(
-          controller: model,
+          controller: widget.model,
           decoration: const InputDecoration(labelText: '模型名称'),
         ),
         const SizedBox(height: 9),
         TextField(
-          controller: apiKey,
-          obscureText: true,
-          decoration: const InputDecoration(labelText: 'API Key'),
+          controller: widget.apiKey,
+          obscureText: !_apiKeyVisible,
+          enableSuggestions: false,
+          autocorrect: false,
+          decoration: InputDecoration(
+            labelText: 'API Key',
+            suffixIcon: IconButton(
+              tooltip: _apiKeyVisible ? '隐藏 API Key' : '显示 API Key',
+              onPressed: () => setState(() => _apiKeyVisible = !_apiKeyVisible),
+              icon: Icon(
+                _apiKeyVisible ? LucideIcons.eyeOff : LucideIcons.eye,
+                size: 18,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 9),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: testing ? null : onTest,
-            icon: testing
+            onPressed: widget.testing ? null : widget.onTest,
+            icon: widget.testing
                 ? const SizedBox.square(
                     dimension: 15,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(LucideIcons.plugZap, size: 17),
-            label: Text(testing ? '正在测试…' : '测试连接'),
+            label: Text(widget.testing ? '正在测试…' : '测试连接'),
           ),
         ),
-        if (result != null) ...[
+        if (widget.result != null) ...[
           const SizedBox(height: 9),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: (success == true ? Colors.green : Colors.red).withValues(
-                alpha: .08,
-              ),
+              color: (widget.success == true ? Colors.green : Colors.red)
+                  .withValues(alpha: .08),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: (success == true ? Colors.green : Colors.red).withValues(
-                  alpha: .3,
-                ),
+                color: (widget.success == true ? Colors.green : Colors.red)
+                    .withValues(alpha: .3),
               ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  success == true
+                  widget.success == true
                       ? LucideIcons.checkCircle2
                       : LucideIcons.alertCircle,
                   size: 17,
-                  color: success == true ? Colors.green : Colors.red,
+                  color: widget.success == true ? Colors.green : Colors.red,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(result!, style: const TextStyle(fontSize: 12)),
+                  child: Text(
+                    widget.result!,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                 ),
               ],
             ),

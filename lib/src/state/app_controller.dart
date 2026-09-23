@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/app_database.dart';
@@ -18,8 +19,19 @@ class AppController extends ChangeNotifier {
   Color accent = const Color(0xFF10B981);
   bool separateAiModels = false;
   bool loading = true;
+  String appVersion = '';
+  String buildNumber = '';
+
+  String get displayVersion => appVersion.isEmpty ? '开发版' : 'v$appVersion';
 
   Future<void> initialize() async {
+    try {
+      final package = await PackageInfo.fromPlatform();
+      appVersion = package.version;
+      buildNumber = package.buildNumber;
+    } catch (_) {
+      // Version information is cosmetic and must not block app startup.
+    }
     final prefs = await SharedPreferences.getInstance();
     themeMode = ThemeMode.values.firstWhere(
       (x) => x.name == prefs.getString('theme_mode'),

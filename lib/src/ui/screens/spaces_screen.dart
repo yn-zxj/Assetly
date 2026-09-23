@@ -420,7 +420,7 @@ class _StorageStickerSheetState extends State<_StorageStickerSheet> {
         .toList();
     final contents = [...assets, ...medicines];
     final qrData = [
-      'Assetly 收纳清单',
+      '物语收纳清单',
       '空间：${location.fullPath}',
       '共 ${contents.length} 件',
       ...contents,
@@ -530,7 +530,7 @@ class _StorageStickerSheetState extends State<_StorageStickerSheet> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      '扫码查看标签生成时的收纳清单 · 数据由 Assetly 本地生成',
+                      '扫码查看标签生成时的收纳清单 · 数据由物语本地生成',
                       style: TextStyle(color: Color(0xFF71717A), fontSize: 9),
                     ),
                   ],
@@ -566,7 +566,7 @@ class _StorageStickerSheetState extends State<_StorageStickerSheet> {
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/assetly-storage-label.png');
       await file.writeAsBytes(bytes!.buffer.asUint8List());
-      await Share.shareXFiles([XFile(file.path)], text: 'Assetly 收纳贴纸 · $name');
+      await Share.shareXFiles([XFile(file.path)], text: '物语收纳贴纸 · $name');
     } finally {
       if (mounted) setState(() => exporting = false);
     }

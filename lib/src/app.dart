@@ -15,7 +15,7 @@ class AssetlyApp extends StatelessWidget {
     child: AnimatedBuilder(
       animation: controller,
       builder: (context, _) => MaterialApp(
-        title: '物语 Assetly',
+        title: '物语',
         debugShowCheckedModeBanner: false,
         locale: const Locale('zh', 'CN'),
         supportedLocales: const [Locale('zh', 'CN')],

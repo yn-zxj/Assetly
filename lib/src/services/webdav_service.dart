@@ -2,14 +2,47 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+Uri buildWebDavUri(String server, String path) {
+  final value = server.trim();
+  if (value.isEmpty) throw Exception('请填写服务器地址');
+  final base = Uri.tryParse(value);
+  if (base == null ||
+      !base.hasAuthority ||
+      base.host.isEmpty ||
+      (base.scheme != 'https' && base.scheme != 'http')) {
+    throw Exception('服务器地址无效，请填写完整的 http:// 或 https:// 地址');
+  }
+  final host = base.host.toLowerCase();
+  if (host == 'dav.jianguoyun.' || host == 'dav.jianguoyun') {
+    throw Exception('坚果云地址不完整，应为 https://dav.jianguoyun.com/dav/');
+  }
+  return Uri.parse(
+    '${value.replaceAll(RegExp(r'/+$'), '')}/${path.trim().replaceAll(RegExp(r'^/+'), '')}',
+  );
+}
+
+String friendlyWebDavError(Object error) {
+  final message = '$error';
+  if (message.contains('HandshakeException') ||
+      message.contains('HandshakeConnection')) {
+    return 'TLS 安全连接失败，请检查服务器域名和 HTTPS 证书';
+  }
+  if (message.contains('Failed host lookup') ||
+      message.contains('No address associated')) {
+    return '无法解析服务器地址，请检查域名和网络';
+  }
+  if (message.contains('TimeoutException')) {
+    return '连接超时，请检查网络或服务器地址';
+  }
+  return message.replaceFirst('Exception: ', '');
+}
+
 class WebDavService {
   Map<String, String> _headers(String username, String password) => {
     'Authorization':
         'Basic ${base64Encode(utf8.encode('$username:$password'))}',
   };
-  Uri _uri(String server, String path) => Uri.parse(
-    '${server.replaceAll(RegExp(r'/+$'), '')}/${path.replaceAll(RegExp(r'^/+'), '')}',
-  );
+  Uri _uri(String server, String path) => buildWebDavUri(server, path);
 
   Future<void> test(
     String server,
@@ -17,22 +50,26 @@ class WebDavService {
     String password,
     String path,
   ) async {
-    if (server.trim().isEmpty) throw Exception('请填写服务器地址');
     if (username.trim().isEmpty) throw Exception('请填写用户名');
     if (password.isEmpty) throw Exception('请填写密码');
-    var response = await _propfind(server, username, password, path);
-    if (response.statusCode == 404) {
-      final segments = path.split('/')..removeWhere((part) => part.isEmpty);
-      if (segments.isNotEmpty) segments.removeLast();
-      response = await _propfind(
-        server,
-        username,
-        password,
-        segments.isEmpty ? '/' : '/${segments.join('/')}/',
-      );
-    }
-    if (response.statusCode != 200 && response.statusCode != 207) {
-      throw Exception('WebDAV 连接失败：HTTP ${response.statusCode}');
+    buildWebDavUri(server, path);
+    try {
+      var response = await _propfind(server, username, password, path);
+      if (response.statusCode == 404) {
+        final segments = path.split('/')..removeWhere((part) => part.isEmpty);
+        if (segments.isNotEmpty) segments.removeLast();
+        response = await _propfind(
+          server,
+          username,
+          password,
+          segments.isEmpty ? '/' : '/${segments.join('/')}/',
+        );
+      }
+      if (response.statusCode != 200 && response.statusCode != 207) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+    } catch (error) {
+      throw Exception('WebDAV 连接失败：${friendlyWebDavError(error)}');
     }
   }
 

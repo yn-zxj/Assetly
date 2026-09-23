@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../app.dart';
+import '../../data/app_database.dart';
 import '../../theme/assetly_theme.dart';
 import '../widgets/common.dart';
 
@@ -8,8 +10,9 @@ class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final state = AppScope.of(context);
     final logs = [
-      ('INFO', 'SQLite WAL mounted · schema v7'),
+      ('INFO', 'SQLite WAL mounted · schema v${AppDatabase.schemaVersion}'),
       ('ALARM', 'AlarmManager exact reminders ready'),
       ('SYNC', 'WebDAV adapter initialized'),
       ('AI', 'Vision compression: max 768px / JPEG 80%'),
@@ -48,12 +51,9 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  '物语 Assetly',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('物语', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 4),
-                const AppBadge('v1.3.0 · Stable'),
+                AppBadge('${state.displayVersion} · Stable'),
                 const SizedBox(height: 10),
                 Text(
                   '主打极简克制美学、全景家庭物品生命周期与原生精准服药提醒的资产管理工具。',
@@ -68,14 +68,17 @@ class AboutScreen extends StatelessWidget {
           ShadCard(
             padding: EdgeInsets.zero,
             child: Column(
-              children: const [
-                _AboutRow('兼容桌面端', 'v0.3.3 SQLite / JSON'),
-                Hairline(),
-                _AboutRow('本地引擎', 'SQLite WAL · schema v7'),
-                Hairline(),
-                _AboutRow('准时提醒', 'Android Exact Alarm'),
-                Hairline(),
-                _AboutRow('云端同步', 'WebDAV 自有服务端'),
+              children: [
+                const _AboutRow('兼容桌面端', 'v0.3.3 SQLite / JSON'),
+                const Hairline(),
+                const _AboutRow(
+                  '本地引擎',
+                  'SQLite WAL · schema v${AppDatabase.schemaVersion}',
+                ),
+                const Hairline(),
+                const _AboutRow('准时提醒', 'Android Exact Alarm'),
+                const Hairline(),
+                const _AboutRow('云端同步', 'WebDAV 自有服务端'),
               ],
             ),
           ),

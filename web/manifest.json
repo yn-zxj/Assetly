@@ -1,6 +1,6 @@
 {
-    "name": "assetly",
-    "short_name": "assetly",
+    "name": "物语",
+    "short_name": "物语",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -6,8 +6,21 @@ import 'package:assetly/src/state/app_controller.dart';
 import 'package:assetly/src/theme/assetly_theme.dart';
 import 'package:assetly/src/ui/app_shell.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+
+class TestAppDatabase extends AppDatabase {
+  final Map<String, String> settings = {};
+
+  @override
+  Future<String?> getSetting(String key) async => settings[key];
+
+  @override
+  Future<void> setSetting(String key, String value, {dynamic database}) async {
+    settings[key] = value;
+  }
+}
 
 void main() {
   test('cost per day uses the full service period', () {
@@ -24,13 +37,15 @@ void main() {
   });
 
   testWidgets('five primary screens fit a phone viewport', (tester) async {
+    FlutterSecureStorage.setMockInitialValues({'ai_api_key': 'sk-test'});
     tester.view.devicePixelRatio = 3;
     tester.view.physicalSize = const Size(1170, 2532);
     addTearDown(() {
       tester.view.resetDevicePixelRatio();
       tester.view.resetPhysicalSize();
     });
-    final controller = AppController(AppDatabase(), NotificationService());
+    final controller = AppController(TestAppDatabase(), NotificationService());
+    controller.appVersion = '1.3.3';
     controller.items = [
       AssetItem(
         id: '1',
@@ -83,7 +98,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Assetly.'), findsOneWidget);
+    expect(find.text('物语'), findsOneWidget);
     expect(find.textContaining('星期'), findsOneWidget);
     expect(find.text('本月新增资产金额'), findsOneWidget);
     expect(find.text('¥ 100.00'), findsOneWidget);
@@ -169,6 +184,29 @@ void main() {
         expect(find.text('修改空间'), findsOneWidget);
         expect(find.text('添加子空间'), findsOneWidget);
         expect(find.text('删除空间'), findsOneWidget);
+        await tester.tapAt(const Offset(8, 8));
+        await tester.pumpAndSettle();
+      }
+      if (label == '设置') {
+        expect(find.textContaining('v1.3.3'), findsWidgets);
+
+        await tester.tap(find.text('配置大模型'));
+        await tester.pumpAndSettle();
+        final apiKeyField = find.byWidgetPredicate(
+          (widget) =>
+              widget is TextField && widget.decoration?.labelText == 'API Key',
+        );
+        expect(tester.widget<TextField>(apiKeyField).obscureText, isTrue);
+        await tester.tap(find.byTooltip('显示 API Key'));
+        await tester.pump();
+        expect(tester.widget<TextField>(apiKeyField).obscureText, isFalse);
+        await tester.tapAt(const Offset(8, 8));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('WebDAV 云同步'));
+        await tester.pumpAndSettle();
+        expect(find.text('下载恢复'), findsOneWidget);
+        expect(find.text('上传备份'), findsOneWidget);
         await tester.tapAt(const Offset(8, 8));
         await tester.pumpAndSettle();
       }

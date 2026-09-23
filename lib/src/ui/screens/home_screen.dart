@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
       slivers: [
         SliverToBoxAdapter(
           child: PageHeader(
-            title: 'Assetly.',
+            title: '物语',
             subtitle: '${_formatChineseDate(DateTime.now())} · 家庭资产全景',
             actions: [
               IconAction(

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
+import '../../data/app_database.dart';
 import '../../services/webdav_service.dart';
 import '../../state/app_controller.dart';
 import '../../theme/assetly_theme.dart';
@@ -25,9 +26,9 @@ class SettingsScreen extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        const PageHeader(
+        PageHeader(
           title: '设置与系统引擎',
-          subtitle: '物语 Assetly v1.3.0 · Local-First 架构',
+          subtitle: '物语 ${state.displayVersion} · Local-First 架构',
         ),
         Padding(
           padding: pagePadding,
@@ -135,7 +136,8 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   _SettingTile(
                     title: '关于、运行日志与开源许可',
-                    subtitle: 'v1.3.0 Stable · SQLite schema v8',
+                    subtitle:
+                        '${state.displayVersion} Stable · SQLite schema v${AppDatabase.schemaVersion}',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const AboutScreen()),
@@ -213,11 +215,14 @@ class SettingsScreen extends StatelessWidget {
 
   Future<void> _export(BuildContext context) async {
     try {
-      final json = await AppScope.of(context).database.exportJson();
+      final state = AppScope.of(context);
+      final json = await state.database.exportJson(
+        appVersion: state.appVersion,
+      );
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/assetly-backup.json');
       await file.writeAsString(json);
-      await Share.shareXFiles([XFile(file.path)], text: '物语 Assetly 本地数据备份');
+      await Share.shareXFiles([XFile(file.path)], text: '物语本地数据备份');
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -262,7 +267,8 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _webdavSettings(BuildContext context) async {
-    final db = AppScope.of(context).database, dav = WebDavService();
+    final state = AppScope.of(context);
+    final db = state.database, dav = WebDavService();
     const secure = FlutterSecureStorage();
     final server = TextEditingController(
           text: await db.getSetting('webdav_server_url') ?? '',
@@ -356,10 +362,7 @@ class SettingsScreen extends StatelessWidget {
                                 result = '连接成功，服务器可用';
                               } catch (error) {
                                 success = false;
-                                result = '$error'.replaceFirst(
-                                  'Exception: ',
-                                  '',
-                                );
+                                result = friendlyWebDavError(error);
                               }
                               if (sheetContext.mounted) {
                                 setLocal(() => busy = false);
@@ -400,34 +403,99 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: busy
-                    ? null
-                    : () async {
-                        setLocal(() {
-                          busy = true;
-                          result = null;
-                        });
-                        try {
-                          await dav.upload(
-                            server.text.trim(),
-                            user.text.trim(),
-                            password.text,
-                            path.text.trim(),
-                            await db.exportJson(),
-                          );
-                          success = true;
-                          result = '备份已成功上传';
-                        } catch (error) {
-                          success = false;
-                          result = '$error'.replaceFirst('Exception: ', '');
-                        }
-                        if (sheetContext.mounted) {
-                          setLocal(() => busy = false);
-                        }
-                      },
-                icon: const Icon(LucideIcons.uploadCloud, size: 18),
-                label: const Text('立即上传备份'),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: busy
+                          ? null
+                          : () async {
+                              final confirmed = await showDialog<bool>(
+                                context: sheetContext,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: const Text('下载并恢复备份？'),
+                                  content: const Text(
+                                    '云端备份将导入当前应用，相同记录会被云端内容覆盖，本地其他记录会保留。',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, false),
+                                      child: const Text('取消'),
+                                    ),
+                                    FilledButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, true),
+                                      child: const Text('继续恢复'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed != true || !sheetContext.mounted) {
+                                return;
+                              }
+                              setLocal(() {
+                                busy = true;
+                                result = null;
+                              });
+                              try {
+                                final content = await dav.download(
+                                  server.text.trim(),
+                                  user.text.trim(),
+                                  password.text,
+                                  path.text.trim(),
+                                );
+                                final counts = await db.importJson(content);
+                                await state.refresh();
+                                success = true;
+                                result = '恢复完成：成功 ${counts.$1}，失败 ${counts.$2}';
+                              } catch (error) {
+                                success = false;
+                                result = friendlyWebDavError(error);
+                              }
+                              if (sheetContext.mounted) {
+                                setLocal(() => busy = false);
+                              }
+                            },
+                      icon: const Icon(LucideIcons.downloadCloud, size: 18),
+                      label: const Text('下载恢复'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: busy
+                          ? null
+                          : () async {
+                              setLocal(() {
+                                busy = true;
+                                result = null;
+                              });
+                              try {
+                                await dav.upload(
+                                  server.text.trim(),
+                                  user.text.trim(),
+                                  password.text,
+                                  path.text.trim(),
+                                  await db.exportJson(
+                                    appVersion: state.appVersion,
+                                  ),
+                                );
+                                success = true;
+                                result = '备份已成功上传';
+                              } catch (error) {
+                                success = false;
+                                result = friendlyWebDavError(error);
+                              }
+                              if (sheetContext.mounted) {
+                                setLocal(() => busy = false);
+                              }
+                            },
+                      icon: const Icon(LucideIcons.uploadCloud, size: 18),
+                      label: const Text('上传备份'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
