@@ -182,7 +182,7 @@ class AppDatabase {
   Future<void> deleteItem(String id) =>
       db.delete('items', where: 'id=?', whereArgs: [id]);
 
-  Future<void> recordDose(Medicine medicine, {double quantity = 1}) async {
+  Future<Medicine?> recordDose(Medicine medicine, {double quantity = 1}) async {
     final now = DateTime.now().toIso8601String();
     await db.transaction((txn) async {
       await txn.insert('medication_logs', {
@@ -199,11 +199,16 @@ class AppDatabase {
         [quantity, now, medicine.id],
       );
     });
+    return getMedicine(medicine.id);
   }
 
-  Future<void> recordDoseById(String medicineId, {double quantity = 1}) async {
+  Future<Medicine?> recordDoseById(
+    String medicineId, {
+    double quantity = 1,
+  }) async {
     final medicine = await getMedicine(medicineId);
-    if (medicine != null) await recordDose(medicine, quantity: quantity);
+    if (medicine == null) return null;
+    return recordDose(medicine, quantity: quantity);
   }
 
   Future<void> saveMedicine(

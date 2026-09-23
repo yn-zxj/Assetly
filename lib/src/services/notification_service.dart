@@ -7,6 +7,22 @@ import 'package:timezone/timezone.dart' as tz;
 import '../data/models.dart';
 import '../data/app_database.dart';
 
+String formatMedicationQuantity(double quantity) {
+  if (!quantity.isFinite) return '0';
+  if (quantity == quantity.truncateToDouble()) {
+    return quantity.toStringAsFixed(0);
+  }
+  return quantity.toString();
+}
+
+String medicationNotificationBody(Medicine medicine) {
+  final stock =
+      '当前库存 ${formatMedicationQuantity(medicine.remainingQuantity)} ${medicine.unit}'
+          .trimRight();
+  final instructions = medicine.dosageInstructions.trim();
+  return instructions.isEmpty ? stock : '$instructions · $stock';
+}
+
 @pragma('vm:entry-point')
 void handleMedicationNotification(NotificationResponse response) async {
   final medicineId = response.payload;
@@ -15,7 +31,16 @@ void handleMedicationNotification(NotificationResponse response) async {
   final database = AppDatabase();
   await database.open();
   if (response.actionId == 'take') {
-    await database.recordDoseById(medicineId);
+    final medicine = await database.recordDoseById(medicineId);
+    if (medicine != null) {
+      try {
+        final notifications = NotificationService();
+        await notifications.initialize();
+        await notifications.syncMedicine(medicine);
+      } catch (error) {
+        debugPrint('服药后刷新提醒失败: $error');
+      }
+    }
   } else if (response.actionId == 'snooze') {
     final medicine = await database.getMedicine(medicineId);
     if (medicine != null) {
@@ -90,8 +115,7 @@ class NotificationService {
       await plugin.zonedSchedule(
         id: medicine.id.hashCode.abs() % 100000 + index,
         title: '用药提醒 · ${medicine.name}',
-        body:
-            '${medicine.dosageInstructions} · 剩余 ${medicine.remainingQuantity.toStringAsFixed(0)} ${medicine.unit}',
+        body: medicationNotificationBody(medicine),
         scheduledDate: when,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -118,7 +142,7 @@ class NotificationService {
     await plugin.zonedSchedule(
       id: medicine.id.hashCode.abs() % 100000 + 90,
       title: '稍后提醒 · ${medicine.name}',
-      body: medicine.dosageInstructions,
+      body: medicationNotificationBody(medicine),
       scheduledDate: tz.TZDateTime.now(
         tz.local,
       ).add(const Duration(minutes: 15)),
@@ -143,6 +167,15 @@ class NotificationService {
   Future<void> cancelMedicine(Medicine medicine) async {
     for (var i = 0; i < 8; i++) {
       await plugin.cancel(id: medicine.id.hashCode.abs() % 100000 + i);
+    }
+    await plugin.cancel(id: medicine.id.hashCode.abs() % 100000 + 90);
+  }
+
+  Future<void> syncMedicine(Medicine medicine) async {
+    if (medicine.isTaking) {
+      await scheduleMedicine(medicine);
+    } else {
+      await cancelMedicine(medicine);
     }
   }
 }

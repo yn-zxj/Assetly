@@ -108,8 +108,15 @@ class AppController extends ChangeNotifier {
       takenMedicineIdsToday.contains(medicine.id);
 
   Future<void> takeDose(Medicine medicine, {double quantity = 1}) async {
-    await database.recordDose(medicine, quantity: quantity);
+    final updated = await database.recordDose(medicine, quantity: quantity);
     await refresh();
+    if (updated != null) {
+      try {
+        await notifications.syncMedicine(updated);
+      } catch (_) {
+        // Recording a dose must still succeed when notifications are unavailable.
+      }
+    }
   }
 
   Future<void> saveMedicine(
@@ -128,11 +135,7 @@ class AppController extends ChangeNotifier {
         ? medicines.firstWhere((m) => m.name == item['name'])
         : medicines.firstWhere((m) => m.id == existing.id);
     try {
-      if (saved.isTaking) {
-        await notifications.scheduleMedicine(saved);
-      } else {
-        await notifications.cancelMedicine(saved);
-      }
+      await notifications.syncMedicine(saved);
     } catch (_) {
       // Saving local data must not fail when notification permission is absent.
     }
