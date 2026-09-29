@@ -7,11 +7,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/assetly_theme.dart';
 
 const pagePadding = EdgeInsets.fromLTRB(16, 8, 16, 24);
+const _topNoticePageOffset = 80.0;
 
 OverlayEntry? _activeTopNotice;
 Timer? _activeTopNoticeTimer;
 
-/// Shows transient feedback at the top of the app, clear of the status bar.
+/// Shows transient feedback below the status bar and page header.
 /// A new notice replaces the previous one so repeated actions never stack.
 void showTopNotice(
   BuildContext context,
@@ -22,14 +23,16 @@ void showTopNotice(
   _activeTopNotice?.remove();
 
   final overlay = Overlay.of(context, rootOverlay: true);
-  final topInset = MediaQuery.paddingOf(context).top;
   late final OverlayEntry entry;
   entry = OverlayEntry(
     builder: (overlayContext) {
       final scheme = Theme.of(overlayContext).colorScheme;
+      // Read from the root overlay. Contexts inside AppShell's SafeArea report
+      // zero top padding, which would otherwise place this over the status bar.
+      final safeTop = MediaQuery.paddingOf(overlayContext).top;
       return Positioned(
         key: const ValueKey('top-notice'),
-        top: topInset + 12,
+        top: safeTop + _topNoticePageOffset,
         left: 16,
         right: 16,
         child: IgnorePointer(
