@@ -23,6 +23,15 @@ Future<void> showAppUpdateDialog(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('当前版本：v$currentVersion'),
+              if (release.downloadVariant != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  '将下载：${release.downloadVariant}',
+                  style: Theme.of(
+                    dialogContext,
+                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
               if (release.notes.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(

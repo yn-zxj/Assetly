@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:assetly/src/services/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,7 +22,14 @@ void main() {
     });
   });
 
-  test('解析 GitHub Release 并优先选择通用 APK', () async {
+  test('正确识别 Android APK 架构名称', () {
+    expect(UpdateService.currentAndroidAbi(Abi.androidArm64), 'arm64-v8a');
+    expect(UpdateService.currentAndroidAbi(Abi.androidArm), 'armeabi-v7a');
+    expect(UpdateService.currentAndroidAbi(Abi.androidX64), 'x86_64');
+    expect(UpdateService.currentAndroidAbi(Abi.macosArm64), isNull);
+  });
+
+  test('解析 GitHub Release 并优先选择当前设备架构 APK', () async {
     final client = MockClient((request) async {
       expect(request.headers['accept'], 'application/vnd.github+json');
       expect(request.headers['x-github-api-version'], '2026-03-10');
@@ -49,10 +57,40 @@ void main() {
       );
     });
 
-    final release = await UpdateService(client: client).getLatestRelease();
+    final release = await UpdateService(
+      client: client,
+      androidAbiProvider: () => 'arm64-v8a',
+    ).getLatestRelease();
 
     expect(release.version, '1.4.0');
-    expect(release.downloadUrl, 'https://example.com/universal.apk');
+    expect(release.downloadUrl, 'https://example.com/arm64.apk');
+    expect(release.downloadVariant, 'ARM64 专用安装包');
     expect(release.notes, '更新说明');
+  });
+
+  test('当前架构没有专用包时回退到通用 APK', () async {
+    final client = MockClient(
+      (_) async => http.Response(
+        jsonEncode({
+          'tag_name': 'v1.4.0',
+          'html_url': 'https://example.com/release',
+          'assets': [
+            {
+              'name': 'Assetly-v1.4.0-android-universal.apk',
+              'browser_download_url': 'https://example.com/universal.apk',
+            },
+          ],
+        }),
+        200,
+      ),
+    );
+
+    final release = await UpdateService(
+      client: client,
+      androidAbiProvider: () => 'x86_64',
+    ).getLatestRelease();
+
+    expect(release.downloadUrl, 'https://example.com/universal.apk');
+    expect(release.downloadVariant, '通用安装包');
   });
 }

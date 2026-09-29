@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -377,9 +378,6 @@ class _AnalyticsCard extends StatelessWidget {
       items,
       from: DateTime(now.year, now.month - 5),
     );
-    final maxAmount = months.fold<double>(0, (value, month) {
-      return month.amount > value ? month.amount : value;
-    });
     final currentMonth = months.lastOrNull;
     final activeItems = items
         .where((item) => item.status != 'disposed')
@@ -399,7 +397,7 @@ class _AnalyticsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(LucideIcons.barChart3, size: 17),
+              const Icon(LucideIcons.areaChart, size: 17),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
@@ -445,18 +443,7 @@ class _AnalyticsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 54,
-            child: Row(
-              children: [
-                for (final month in months)
-                  _MiniBar(
-                    month: month.month,
-                    value: maxAmount == 0 ? 0 : month.amount / maxAmount,
-                  ),
-              ],
-            ),
-          ),
+          SizedBox(height: 118, child: _PurchaseTrendChart(months: months)),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
@@ -489,39 +476,127 @@ class _AnalyticsCard extends StatelessWidget {
   }
 }
 
-class _MiniBar extends StatelessWidget {
-  const _MiniBar({required this.month, required this.value});
-  final DateTime month;
-  final double value;
+class _PurchaseTrendChart extends StatelessWidget {
+  const _PurchaseTrendChart({required this.months});
+  final List<_MonthlyPurchase> months;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Column(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: value == 0 ? 2 : 42 * value,
-                decoration: BoxDecoration(
-                  color:
-                      month.year == DateTime.now().year &&
-                          month.month == DateTime.now().month
-                      ? Theme.of(context).colorScheme.onSurface
-                      : context.colors.muted,
-                  borderRadius: BorderRadius.circular(3),
+  Widget build(BuildContext context) {
+    final accent = context.colors.accent;
+    final maxAmount = months.fold<double>(0, (value, month) {
+      return month.amount > value ? month.amount : value;
+    });
+    final chartMax = maxAmount <= 0 ? 1.0 : maxAmount * 1.18;
+    final spots = [
+      for (var index = 0; index < months.length; index++)
+        FlSpot(index.toDouble(), months[index].amount),
+    ];
+
+    return LineChart(
+      LineChartData(
+        minX: 0,
+        maxX: (months.length - 1).clamp(1, double.infinity).toDouble(),
+        minY: 0,
+        maxY: chartMax,
+        clipData: const FlClipData.all(),
+        borderData: FlBorderData(show: false),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: chartMax / 3,
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: context.colors.border.withValues(alpha: .65),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 1,
+              reservedSize: 24,
+              getTitlesWidget: (value, meta) {
+                final index = value.round();
+                if (value != index || index < 0 || index >= months.length) {
+                  return const SizedBox.shrink();
+                }
+                return SideTitleWidget(
+                  meta: meta,
+                  space: 6,
+                  child: Text(
+                    '${months[index].month.month}月',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        lineTouchData: LineTouchData(
+          touchSpotThreshold: 22,
+          touchTooltipData: LineTouchTooltipData(
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            tooltipBorderRadius: BorderRadius.circular(9),
+            getTooltipColor: (_) => Theme.of(context).colorScheme.onSurface,
+            getTooltipItems: (spots) => spots.map((spot) {
+              final month = months[spot.x.round()];
+              return LineTooltipItem(
+                '${month.month.year}年${month.month.month}月\n¥${NumberFormat('#,##0.00').format(month.amount)} · ${month.itemCount} 件',
+                TextStyle(
+                  color: Theme.of(context).colorScheme.surface,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
+              );
+            }).toList(),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            curveSmoothness: .3,
+            preventCurveOverShooting: true,
+            barWidth: 2.2,
+            color: accent,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
+                radius: spot.x == months.length - 1 ? 3 : 2,
+                color: accent,
+                strokeWidth: 1.5,
+                strokeColor: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  accent.withValues(alpha: .28),
+                  accent.withValues(alpha: .02),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 3),
-          Text('${month.month}月', style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
-    ),
-  );
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
 }
 
 class _MonthlyPurchase {
