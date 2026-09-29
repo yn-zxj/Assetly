@@ -5,11 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/app_database.dart';
 import '../data/models.dart';
 import '../services/notification_service.dart';
+import '../services/update_service.dart';
 
 class AppController extends ChangeNotifier {
-  AppController(this.database, this.notifications);
+  AppController(
+    this.database,
+    this.notifications, {
+    UpdateService? updateService,
+  }) : updateService = updateService ?? UpdateService();
   final AppDatabase database;
   final NotificationService notifications;
+  final UpdateService updateService;
   List<AssetItem> items = [];
   List<Medicine> medicines = [];
   List<StorageLocation> locations = [];
@@ -21,6 +27,14 @@ class AppController extends ChangeNotifier {
   bool loading = true;
   String appVersion = '';
   String buildNumber = '';
+  AppRelease? availableUpdate;
+  String? updateError;
+  DateTime? lastUpdateCheck;
+  bool checkingForUpdates = false;
+  bool checkedForUpdates = false;
+  Future<AppRelease?>? _activeUpdateCheck;
+
+  static const updateCheckInterval = Duration(hours: 12);
 
   String get displayVersion => appVersion.isEmpty ? '开发版' : 'v$appVersion';
 
@@ -186,6 +200,57 @@ class AppController extends ChangeNotifier {
   Future<void> deleteLocation(String id) async {
     await database.deleteLocation(id);
     await refresh();
+  }
+
+  Future<AppRelease?> checkForUpdates({bool force = false}) async {
+    final active = _activeUpdateCheck;
+    if (active != null) return active;
+    final task = _checkForUpdates(force: force);
+    _activeUpdateCheck = task;
+    try {
+      return await task;
+    } finally {
+      _activeUpdateCheck = null;
+    }
+  }
+
+  Future<AppRelease?> _checkForUpdates({required bool force}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCheck = DateTime.tryParse(
+      prefs.getString('last_update_check_at') ?? '',
+    );
+    lastUpdateCheck = savedCheck;
+    if (!force &&
+        savedCheck != null &&
+        DateTime.now().difference(savedCheck) < updateCheckInterval) {
+      return availableUpdate;
+    }
+
+    checkingForUpdates = true;
+    updateError = null;
+    notifyListeners();
+    try {
+      if (appVersion.isEmpty) throw Exception('无法读取当前应用版本');
+      final release = await updateService.getLatestRelease();
+      availableUpdate =
+          UpdateService.isNewerVersion(release.version, appVersion)
+          ? release
+          : null;
+      checkedForUpdates = true;
+      return availableUpdate;
+    } catch (error) {
+      updateError = '$error'.replaceFirst('Exception: ', '');
+      checkedForUpdates = true;
+      return null;
+    } finally {
+      checkingForUpdates = false;
+      lastUpdateCheck = DateTime.now();
+      await prefs.setString(
+        'last_update_check_at',
+        lastUpdateCheck!.toIso8601String(),
+      );
+      notifyListeners();
+    }
   }
 
   Future<bool> enableReminders() async {

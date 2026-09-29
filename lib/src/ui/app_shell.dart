@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../state/app_controller.dart';
 import '../theme/assetly_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/items_screen.dart';
 import 'screens/pharmacy_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/spaces_screen.dart';
+import 'widgets/update_dialog.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key, required this.controller});
+  final AppController controller;
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
   int index = 0;
+  bool updateCheckStarted = false;
   late final pages = [
     HomeScreen(onNavigate: (i) => setState(() => index = i)),
     const ItemsScreen(),
@@ -50,6 +55,24 @@ class _AppShellState extends State<AppShell> {
       label: '设置',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdates());
+  }
+
+  Future<void> _checkForUpdates() async {
+    if (updateCheckStarted) return;
+    updateCheckStarted = true;
+    final release = await widget.controller.checkForUpdates();
+    if (!mounted || release == null) return;
+    await showAppUpdateDialog(
+      context,
+      release: release,
+      currentVersion: widget.controller.appVersion,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -14,6 +14,7 @@ import '../../services/webdav_service.dart';
 import '../../state/app_controller.dart';
 import '../../theme/assetly_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/update_dialog.dart';
 import 'about_screen.dart';
 import 'ai_settings_sheet.dart';
 
@@ -135,6 +136,24 @@ class SettingsScreen extends StatelessWidget {
                 icon: LucideIcons.info,
                 children: [
                   _SettingTile(
+                    title: '检查更新',
+                    subtitle: _updateSubtitle(state),
+                    onTap: state.checkingForUpdates
+                        ? null
+                        : () => _checkForUpdates(context, state),
+                    trailing: state.checkingForUpdates
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : state.availableUpdate != null
+                        ? AppBadge(
+                            state.availableUpdate!.tagName,
+                            color: context.colors.accent,
+                          )
+                        : const Icon(LucideIcons.refreshCw, size: 18),
+                  ),
+                  _SettingTile(
                     title: '关于、运行日志与开源许可',
                     subtitle:
                         '${state.displayVersion} Stable · SQLite schema v${AppDatabase.schemaVersion}',
@@ -212,6 +231,35 @@ class SettingsScreen extends StatelessWidget {
       ),
     ],
   );
+
+  String _updateSubtitle(AppController state) {
+    if (state.checkingForUpdates) return '正在查询 GitHub Releases…';
+    if (state.availableUpdate != null) {
+      return '发现 ${state.availableUpdate!.tagName}，点击查看更新';
+    }
+    if (state.updateError != null) return state.updateError!;
+    if (state.checkedForUpdates) return '当前已是最新版本';
+    return '自动检查 GitHub 发布的新版本';
+  }
+
+  Future<void> _checkForUpdates(
+    BuildContext context,
+    AppController state,
+  ) async {
+    final release = await state.checkForUpdates(force: true);
+    if (!context.mounted) return;
+    if (release != null) {
+      await showAppUpdateDialog(
+        context,
+        release: release,
+        currentVersion: state.appVersion,
+      );
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(state.updateError ?? '当前已是最新版本')));
+  }
 
   Future<void> _export(BuildContext context) async {
     try {

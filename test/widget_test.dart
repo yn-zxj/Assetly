@@ -2,6 +2,7 @@ import 'package:assetly/src/data/models.dart';
 import 'package:assetly/src/app.dart';
 import 'package:assetly/src/data/app_database.dart';
 import 'package:assetly/src/services/notification_service.dart';
+import 'package:assetly/src/services/update_service.dart';
 import 'package:assetly/src/state/app_controller.dart';
 import 'package:assetly/src/theme/assetly_theme.dart';
 import 'package:assetly/src/ui/app_shell.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TestAppDatabase extends AppDatabase {
   final Map<String, String> settings = {};
@@ -20,6 +22,17 @@ class TestAppDatabase extends AppDatabase {
   Future<void> setSetting(String key, String value, {dynamic database}) async {
     settings[key] = value;
   }
+}
+
+class TestUpdateService extends UpdateService {
+  @override
+  Future<AppRelease> getLatestRelease() async => const AppRelease(
+    tagName: 'v1.3.3',
+    version: '1.3.3',
+    releaseUrl: 'https://example.com/release',
+    notes: '',
+    publishedAt: null,
+  );
 }
 
 void main() {
@@ -37,6 +50,7 @@ void main() {
   });
 
   testWidgets('five primary screens fit a phone viewport', (tester) async {
+    SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({'ai_api_key': 'sk-test'});
     tester.view.devicePixelRatio = 3;
     tester.view.physicalSize = const Size(1170, 2532);
@@ -44,7 +58,11 @@ void main() {
       tester.view.resetDevicePixelRatio();
       tester.view.resetPhysicalSize();
     });
-    final controller = AppController(TestAppDatabase(), NotificationService());
+    final controller = AppController(
+      TestAppDatabase(),
+      NotificationService(),
+      updateService: TestUpdateService(),
+    );
     controller.appVersion = '1.3.3';
     controller.items = [
       AssetItem(
@@ -94,7 +112,7 @@ void main() {
         controller: controller,
         child: MaterialApp(
           theme: AssetlyTheme.light(const Color(0xFF10B981)),
-          home: const AppShell(),
+          home: AppShell(controller: controller),
         ),
       ),
     );
@@ -189,6 +207,8 @@ void main() {
       }
       if (label == '设置') {
         expect(find.textContaining('v1.3.3'), findsWidgets);
+        expect(find.text('检查更新'), findsOneWidget);
+        expect(find.text('当前已是最新版本'), findsOneWidget);
 
         await tester.tap(find.text('配置大模型'));
         await tester.pumpAndSettle();

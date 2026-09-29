@@ -27,7 +27,7 @@ class AssetlyApp extends StatelessWidget {
         theme: AssetlyTheme.light(controller.accent),
         darkTheme: AssetlyTheme.dark(controller.accent),
         themeMode: controller.themeMode,
-        home: const AppShell(),
+        home: AppShell(controller: controller),
       ),
     ),
   );
