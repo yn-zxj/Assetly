@@ -75,12 +75,9 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         final ok = await state.enableReminders();
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok ? '精准提醒已开启' : '未获得完整权限，请在系统设置中开启',
-                              ),
-                            ),
+                          showTopNotice(
+                            context,
+                            ok ? '精准提醒已开启' : '未获得完整权限，请在系统设置中开启',
                           );
                         }
                       },
@@ -256,9 +253,7 @@ class SettingsScreen extends StatelessWidget {
       );
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(state.updateError ?? '当前已是最新版本')));
+    showTopNotice(context, state.updateError ?? '当前已是最新版本');
   }
 
   Future<void> _export(BuildContext context) async {
@@ -273,9 +268,7 @@ class SettingsScreen extends StatelessWidget {
       await Share.shareXFiles([XFile(file.path)], text: '物语本地数据备份');
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('导出失败：$e')));
+        showTopNotice(context, '导出失败：$e');
       }
     }
   }
@@ -294,15 +287,11 @@ class SettingsScreen extends StatelessWidget {
       final counts = await state.database.importJson(utf8.decode(bytes));
       await state.refresh();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('导入完成：成功 ${counts.$1}，失败 ${counts.$2}')),
-        );
+        showTopNotice(context, '导入完成：成功 ${counts.$1}，失败 ${counts.$2}');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('导入失败：$e')));
+        showTopNotice(context, '导入失败：$e');
       }
     }
   }

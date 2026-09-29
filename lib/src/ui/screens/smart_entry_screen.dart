@@ -351,9 +351,7 @@ class _SmartEntryScreenState extends State<SmartEntryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$e')));
+        showTopNotice(context, '$e');
       }
     } finally {
       if (mounted) setState(() => busy = false);

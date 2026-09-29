@@ -206,9 +206,7 @@ class _ScheduleCard extends StatelessWidget {
                 : () async {
                     await state.takeDose(medicine);
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${medicine.name} 已完成今日打卡')),
-                      );
+                      showTopNotice(context, '${medicine.name} 已完成今日打卡');
                     }
                   },
             style: FilledButton.styleFrom(

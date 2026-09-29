@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/update_service.dart';
+import 'common.dart';
 
 Future<void> showAppUpdateDialog(
   BuildContext context, {
@@ -41,16 +42,20 @@ Future<void> showAppUpdateDialog(
         FilledButton.icon(
           onPressed: () async {
             final url = Uri.parse(release.downloadUrl ?? release.releaseUrl);
-            final opened = await launchUrl(
-              url,
-              mode: LaunchMode.externalApplication,
-            );
-            if (dialogContext.mounted && opened) {
-              Navigator.pop(dialogContext);
-            } else if (dialogContext.mounted) {
-              ScaffoldMessenger.of(
-                dialogContext,
-              ).showSnackBar(const SnackBar(content: Text('无法打开更新下载页')));
+            try {
+              final opened = await launchUrl(
+                url,
+                mode: LaunchMode.externalApplication,
+              );
+              if (dialogContext.mounted && opened) {
+                Navigator.pop(dialogContext);
+              } else if (dialogContext.mounted) {
+                showTopNotice(dialogContext, '无法打开更新下载页');
+              }
+            } catch (_) {
+              if (dialogContext.mounted) {
+                showTopNotice(dialogContext, '无法打开更新下载页');
+              }
             }
           },
           icon: const Icon(LucideIcons.download, size: 18),

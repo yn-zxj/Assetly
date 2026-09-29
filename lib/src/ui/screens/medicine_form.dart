@@ -398,15 +398,11 @@ class _MedicineFormState extends State<_MedicineForm> {
 
   Future<void> _save() async {
     if (name.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请填写药品名称')));
+      showTopNotice(context, '请填写药品名称');
       return;
     }
     if (taking && times.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请至少添加一个用药时间')));
+      showTopNotice(context, '请至少添加一个用药时间');
       return;
     }
     final state = widget.controller;

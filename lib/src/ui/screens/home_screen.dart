@@ -167,14 +167,9 @@ class HomeScreen extends StatelessWidget {
                                           : () async {
                                               await state.takeDose(m);
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(
+                                                showTopNotice(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      '${m.name} 已完成今日打卡，库存已同步更新',
-                                                    ),
-                                                  ),
+                                                  '${m.name} 已完成今日打卡，库存已同步更新',
                                                 );
                                               }
                                             },

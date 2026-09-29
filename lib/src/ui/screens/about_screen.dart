@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app.dart';
 import '../../data/app_database.dart';
@@ -24,9 +25,7 @@ class AboutScreen extends StatelessWidget {
         title: const Text('关于与系统诊断'),
         actions: [
           IconButton(
-            onPressed: () => ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('诊断摘要已准备'))),
+            onPressed: () => showTopNotice(context, '诊断摘要已准备'),
             icon: const Icon(LucideIcons.share2),
           ),
         ],
@@ -53,7 +52,21 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text('物语', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 4),
-                AppBadge('${state.displayVersion} · Stable'),
+                Semantics(
+                  button: true,
+                  label: '${state.displayVersion}，打开物语开源项目',
+                  child: Tooltip(
+                    message: '打开 GitHub 开源项目',
+                    child: InkWell(
+                      onTap: () => _openProject(context),
+                      borderRadius: BorderRadius.circular(99),
+                      child: AppBadge(
+                        '${state.displayVersion} · Stable',
+                        icon: LucideIcons.externalLink,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   '主打极简克制美学、全景家庭物品生命周期与原生精准服药提醒的资产管理工具。',
@@ -146,6 +159,20 @@ class AboutScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openProject(BuildContext context) async {
+    try {
+      final opened = await launchUrl(
+        Uri.parse('https://github.com/yn-zxj/Assetly'),
+        mode: LaunchMode.externalApplication,
+      );
+      if (context.mounted && !opened) {
+        showTopNotice(context, '无法打开 GitHub 项目地址');
+      }
+    } catch (_) {
+      if (context.mounted) showTopNotice(context, '无法打开 GitHub 项目地址');
+    }
   }
 }
 

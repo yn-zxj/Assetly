@@ -365,9 +365,7 @@ class SpacesScreen extends StatelessWidget {
     if (confirmed && context.mounted) {
       await state.deleteLocation(location.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('已删除空间“${location.name}”')));
+        showTopNotice(context, '已删除空间“${location.name}”');
       }
     }
   }

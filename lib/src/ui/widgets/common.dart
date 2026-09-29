@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -5,6 +7,100 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/assetly_theme.dart';
 
 const pagePadding = EdgeInsets.fromLTRB(16, 8, 16, 24);
+
+OverlayEntry? _activeTopNotice;
+Timer? _activeTopNoticeTimer;
+
+/// Shows transient feedback at the top of the app, clear of the status bar.
+/// A new notice replaces the previous one so repeated actions never stack.
+void showTopNotice(
+  BuildContext context,
+  String message, {
+  Duration duration = const Duration(seconds: 3),
+}) {
+  _activeTopNoticeTimer?.cancel();
+  _activeTopNotice?.remove();
+
+  final overlay = Overlay.of(context, rootOverlay: true);
+  final topInset = MediaQuery.paddingOf(context).top;
+  late final OverlayEntry entry;
+  entry = OverlayEntry(
+    builder: (overlayContext) {
+      final scheme = Theme.of(overlayContext).colorScheme;
+      return Positioned(
+        key: const ValueKey('top-notice'),
+        top: topInset + 12,
+        left: 16,
+        right: 16,
+        child: IgnorePointer(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              tween: Tween(begin: 0, end: 1),
+              builder: (context, value, child) => Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, -10 * (1 - value)),
+                  child: child,
+                ),
+              ),
+              child: Semantics(
+                liveRegion: true,
+                label: message,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Material(
+                    color: scheme.onSurface,
+                    elevation: 8,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(11),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.info,
+                            size: 17,
+                            color: scheme.surface,
+                          ),
+                          const SizedBox(width: 9),
+                          Flexible(
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: scheme.surface,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  _activeTopNotice = entry;
+  overlay.insert(entry);
+  _activeTopNoticeTimer = Timer(duration, () {
+    if (!identical(_activeTopNotice, entry)) return;
+    entry.remove();
+    _activeTopNotice = null;
+    _activeTopNoticeTimer = null;
+  });
+}
 
 class PageHeader extends StatelessWidget {
   const PageHeader({
