@@ -39,9 +39,9 @@ class MedicineDetailScreen extends StatelessWidget {
                 width: 62,
                 height: 62,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
+                decoration: ShapeDecoration(
                   color: context.colors.accent.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(14),
+                  shape: AppShape.all(AppCorner.lg),
                 ),
                 child: Icon(
                   type?.icon ?? LucideIcons.pill,

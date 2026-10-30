@@ -63,27 +63,17 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                   subtitle: '${state.medicines.length} 种药品',
                 ),
                 SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children:
-                        [
-                              const SelectOption('all', '全部'),
-                              ...medicineTypeOptions,
-                            ]
-                            .map(
-                              (option) => Padding(
-                                padding: const EdgeInsets.only(right: 7),
-                                child: ChoiceChip(
-                                  label: Text(option.label),
-                                  selected: filter == option.value,
-                                  showCheckmark: false,
-                                  onSelected: (_) =>
-                                      setState(() => filter = option.value),
-                                ),
-                              ),
-                            )
-                            .toList(),
+                  height: 38,
+                  child: PillFilterBar<String>(
+                    value: filter,
+                    onChanged: (value) => setState(() => filter = value),
+                    options: [
+                      const PillFilterOption('all', '全部'),
+                      ...medicineTypeOptions.map(
+                        (option) =>
+                            PillFilterOption(option.value, option.label),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -109,7 +99,6 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                       child: _MedicineTile(medicine: medicine),
                     ),
                   ),
-                const SizedBox(height: 80),
               ],
             ),
           ),
@@ -124,42 +113,80 @@ class _ProgressCard extends StatelessWidget {
   final int completed, total;
 
   @override
-  Widget build(BuildContext context) => ShadCard(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '今日服药进度',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+  Widget build(BuildContext context) {
+    final percent = total == 0 ? 0.0 : completed / total;
+    return ShadCard(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          context.colors.accent.withValues(alpha: context.isDark ? .24 : .13),
+          context.colors.card,
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 64,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox.square(
+                  dimension: 64,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: percent),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 7,
+                      strokeCap: StrokeCap.round,
+                      backgroundColor: context.colors.muted,
+                      color: context.colors.accent,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${(percent * 100).round()}%',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              '$completed / $total 项',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99),
-          child: LinearProgressIndicator(
-            value: total == 0 ? 0 : completed / total,
-            minHeight: 8,
-            backgroundColor: context.colors.muted,
-            color: context.colors.accent,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          completed == total ? '今日计划已全部完成' : '打卡会同步扣减库存并写入服药记录',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
-    ),
-  );
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '今日服药进度',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    Text(
+                      '$completed / $total 项',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  completed == total ? '今日计划已全部完成' : '打卡会同步扣减库存并写入服药记录',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ScheduleCard extends StatelessWidget {
@@ -243,12 +270,12 @@ class _MedicineTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 48,
+            height: 48,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: context.colors.accent.withValues(alpha: .09),
-              borderRadius: BorderRadius.circular(12),
+            decoration: ShapeDecoration(
+              color: context.colors.accent.withValues(alpha: .1),
+              shape: AppShape.all(AppCorner.md),
             ),
             child: Icon(
               option?.icon ?? LucideIcons.pill,

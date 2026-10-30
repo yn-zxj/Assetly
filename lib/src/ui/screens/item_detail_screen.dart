@@ -23,11 +23,11 @@ class ItemDetailScreen extends StatelessWidget {
               width: 62,
               height: 62,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
+              decoration: ShapeDecoration(
                 color: context.colors.muted,
-                borderRadius: BorderRadius.circular(14),
+                shape: AppShape.all(AppCorner.lg),
               ),
-              child: Text(item.icon, style: const TextStyle(fontSize: 30)),
+              child: ItemIconArt(item.icon, size: 34),
             ),
             const SizedBox(width: 13),
             Expanded(
@@ -83,11 +83,15 @@ class ItemDetailScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
                   const SizedBox(width: 7),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      '/ 天 (当前累计摊薄)',
-                      style: Theme.of(context).textTheme.bodySmall,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        '/ 天 (当前累计摊薄)',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
                   ),
                 ],

@@ -74,7 +74,7 @@ class _SmartEntryScreenState extends State<SmartEntryScreen> {
       AspectRatio(
         aspectRatio: 1.15,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppCorner.xl),
           child: cameraSupported
               ? Stack(
                   fit: StackFit.expand,
@@ -95,7 +95,7 @@ class _SmartEntryScreenState extends State<SmartEntryScreen> {
                         height: 112,
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.white, width: 2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppCorner.md),
                         ),
                       ),
                     ),
@@ -141,9 +141,9 @@ class _SmartEntryScreenState extends State<SmartEntryScreen> {
       const SizedBox(height: 10),
       Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
+        decoration: ShapeDecoration(
           color: context.colors.muted,
-          borderRadius: BorderRadius.circular(10),
+          shape: AppShape.all(AppCorner.sm),
         ),
         child: const Row(
           children: [

@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../app.dart';
 import '../../data/models.dart';
+import '../../state/app_controller.dart';
 import '../../theme/assetly_theme.dart';
 import '../widgets/common.dart';
 import 'item_detail_screen.dart';
@@ -43,187 +44,66 @@ class HomeScreen extends StatelessWidget {
           padding: pagePadding,
           sliver: SliverList.list(
             children: [
-              ShadCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'TOTAL ASSETS VALUE',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: .5,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        AppBadge(
-                          '在役中 ${state.activeCount} 件',
-                          color: context.colors.accent,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '¥ ${NumberFormat('#,##0.00').format(state.totalValue)}',
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        AppBadge(
-                          '日均消耗: ¥${state.totalDailyCost.toStringAsFixed(1)} / 天',
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '数据仅保存在本机',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              _AssetHero(
+                totalValue: state.totalValue,
+                activeCount: state.activeCount,
+                dailyCost: state.totalDailyCost,
+                onScan: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        SmartEntryScreen(initialMode: EntryMode.barcode),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
-              if (state.items.isNotEmpty) ...[
-                _AnalyticsCard(items: state.items),
-                const SizedBox(height: 12),
-              ],
               ShadCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SmartEntryScreen(initialMode: EntryMode.ai),
+                  ),
+                ),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          LucideIcons.pill,
-                          size: 18,
-                          color: context.colors.accent,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '今日服药看板',
-                            style: Theme.of(context).textTheme.titleMedium,
+                    const TintedIcon(icon: LucideIcons.sparkles),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI 拍照录入',
+                            style: Theme.of(context).textTheme.labelLarge,
                           ),
-                        ),
-                        AppBadge(
-                          '待服 ${state.takingMedicines.where((m) => !state.wasTakenToday(m)).length} 项',
-                          color: const Color(0xFFD97706),
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            '多模态识别物品与药品，自动填充表单',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    if (state.takingMedicines.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(
-                          '暂无进行中的用药计划，可前往药箱添加。',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      )
-                    else
-                      ...state.takingMedicines
-                          .take(2)
-                          .map(
-                            (m) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          m.name,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.labelLarge,
-                                        ),
-                                        Text(
-                                          '${m.slots.isEmpty ? '--' : m.slots.first} · ${m.dosageInstructions}',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  SizedBox(
-                                    height: 34,
-                                    child: FilledButton(
-                                      onPressed: state.wasTakenToday(m)
-                                          ? null
-                                          : () async {
-                                              await state.takeDose(m);
-                                              if (context.mounted) {
-                                                showTopNotice(
-                                                  context,
-                                                  '${m.name} 已完成今日打卡，库存已同步更新',
-                                                );
-                                              }
-                                            },
-                                      style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        state.wasTakenToday(m) ? '已打卡' : '快捷打卡',
-                                        style: TextStyle(fontSize: 11),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                    Icon(
+                      LucideIcons.chevronRight,
+                      size: 18,
+                      color: context.colors.mutedForeground,
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              SmartEntryScreen(initialMode: EntryMode.barcode),
-                        ),
-                      ),
-                      icon: const Icon(LucideIcons.scanLine, size: 18),
-                      label: const Text('扫条码 / 药监码'),
-                    ),
-                  ),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              SmartEntryScreen(initialMode: EntryMode.ai),
-                        ),
-                      ),
-                      icon: const Icon(LucideIcons.sparkles, size: 18),
-                      label: const Text('AI 拍照录入'),
-                    ),
-                  ),
-                ],
-              ),
+              if (state.items.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _AnalyticsCard(items: state.items),
+              ],
+              const SizedBox(height: 12),
+              _MedicationBoard(state: state),
               if (state.expiringMedicines.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 _ExpiryAlert(
@@ -232,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                   location: state.expiringMedicines.first.locationPath,
                 ),
               ],
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               SectionTitle(
                 '在役资产精选',
                 trailing: TextButton(
@@ -255,73 +135,8 @@ class HomeScreen extends StatelessWidget {
                     .take(4)
                     .map(
                       (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: ShadCard(
-                          padding: const EdgeInsets.all(10),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ItemDetailScreen(item: item),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: context.colors.muted,
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                                child: Text(
-                                  item.icon,
-                                  style: const TextStyle(fontSize: 21),
-                                ),
-                              ),
-                              const SizedBox(width: 11),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelLarge,
-                                    ),
-                                    Text(
-                                      '${item.locationPath} · 服役 ${item.daysInService} 天',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  AppBadge(
-                                    '¥ ${item.dailyCost.toStringAsFixed(1)} / 天',
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '原价 ¥${NumberFormat('#,##0').format(item.purchasePrice)}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                        padding: const EdgeInsets.only(bottom: 9),
+                        child: _HomeItemTile(item: item),
                       ),
                     ),
             ],
@@ -350,9 +165,12 @@ class HomeScreen extends StatelessWidget {
               ),
             ...state.expiringMedicines.map(
               (m) => ListTile(
-                leading: const Icon(
-                  LucideIcons.alertTriangle,
+                leading: const TintedIcon(
+                  icon: LucideIcons.alertTriangle,
                   color: Color(0xFFD97706),
+                  size: 38,
+                  iconSize: 18,
+                  radius: AppCorner.sm,
                 ),
                 title: Text(m.name),
                 subtitle: Text(
@@ -365,6 +183,401 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AssetHero extends StatelessWidget {
+  const _AssetHero({
+    required this.totalValue,
+    required this.activeCount,
+    required this.dailyCost,
+    required this.onScan,
+  });
+
+  final double totalValue;
+  final int activeCount;
+  final double dailyCost;
+  final VoidCallback onScan;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.colors.accent;
+    return ShadCard(
+      padding: EdgeInsets.zero,
+      clip: true,
+      elevated: true,
+      borderColor: accent.withValues(alpha: context.isDark ? .3 : .2),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          accent.withValues(alpha: context.isDark ? .26 : .14),
+          context.colors.card,
+        ],
+        stops: const [0, .82],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -52,
+            top: -64,
+            child: Container(
+              width: 196,
+              height: 196,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    accent.withValues(alpha: context.isDark ? .2 : .12),
+                    accent.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '家庭资产总值',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .6,
+                      ),
+                    ),
+                    const Spacer(),
+                    AppBadge('在役中 $activeCount 件', color: accent),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: AnimatedMoney(
+                        value: totalValue,
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    _ScanOrb(onTap: onScan),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _HeroStat(
+                      label: '日均消耗',
+                      value: '¥${dailyCost.toStringAsFixed(1)} / 天',
+                    ),
+                    Container(
+                      width: 1,
+                      height: 26,
+                      margin: const EdgeInsets.symmetric(horizontal: 14),
+                      color: context.colors.border,
+                    ),
+                    _HeroStat(label: '数据存储', value: '仅保存在本机'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.label, required this.value});
+  final String label, value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 3),
+      Text(value, style: Theme.of(context).textTheme.labelLarge),
+    ],
+  );
+}
+
+class _ScanOrb extends StatelessWidget {
+  const _ScanOrb({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      ElasticPress(
+        maxGrowth: 6,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 60,
+            height: 60,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  context.colors.primary,
+                  Color.lerp(context.colors.primary, Colors.black, .18)!,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: context.colors.primary.withValues(alpha: .35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Icon(
+              LucideIcons.scanLine,
+              size: 25,
+              color: context.colors.onPrimary,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        '扫码录入',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  );
+}
+
+class _HomeItemTile extends StatelessWidget {
+  const _HomeItemTile({required this.item});
+  final AssetItem item;
+
+  @override
+  Widget build(BuildContext context) => ShadCard(
+    padding: const EdgeInsets.all(12),
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ItemDetailScreen(item: item)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          alignment: Alignment.center,
+          decoration: ShapeDecoration(
+            color: context.colors.muted,
+            shape: AppShape.all(AppCorner.md),
+          ),
+          child: ItemIconArt(item.icon, size: 26),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                [
+                  if (item.locationPath.isNotEmpty) item.locationPath,
+                  '服役 ${item.daysInService} 天',
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            AppBadge(
+              '¥ ${item.dailyCost.toStringAsFixed(1)} / 天',
+              color: item.status == 'idle'
+                  ? const Color(0xFFD97706)
+                  : context.colors.accent,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              '原价 ¥${NumberFormat('#,##0').format(item.purchasePrice)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 10.5),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _MedicationBoard extends StatelessWidget {
+  const _MedicationBoard({required this.state});
+  final AppController state;
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = state.takingMedicines
+        .where((m) => !state.wasTakenToday(m))
+        .length;
+    return ShadCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const TintedIcon(
+                icon: LucideIcons.pill,
+                size: 36,
+                iconSize: 18,
+                radius: AppCorner.sm,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '今日服药看板',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              AppBadge(
+                '待服 $pending 项',
+                color: pending == 0
+                    ? context.colors.accent
+                    : const Color(0xFFD97706),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (state.takingMedicines.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                '暂无进行中的用药计划，可前往药箱添加。',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            )
+          else
+            ...state.takingMedicines
+                .take(2)
+                .map(
+                  (m) => Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        AppBadge(
+                          m.slots.isEmpty ? '--:--' : m.slots.first,
+                          icon: LucideIcons.clock3,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                m.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              Text(
+                                m.dosageInstructions.isEmpty
+                                    ? '未填写服用说明'
+                                    : m.dosageInstructions,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _CheckButton(
+                          done: state.wasTakenToday(m),
+                          onPressed: () async {
+                            await state.takeDose(m);
+                            if (context.mounted) {
+                              showTopNotice(
+                                context,
+                                '${m.name} 已完成今日打卡，库存已同步更新',
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckButton extends StatelessWidget {
+  const _CheckButton({required this.done, required this.onPressed});
+  final bool done;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => ElasticPress(
+    maxGrowth: 5,
+    enabled: !done,
+    child: GestureDetector(
+      onTap: done ? null : onPressed,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        decoration: ShapeDecoration(
+          color: done ? context.colors.muted : context.colors.primary,
+          shape: AppShape.pill,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (done) ...[
+              Icon(
+                LucideIcons.check,
+                size: 13,
+                color: context.colors.mutedForeground,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              done ? '已打卡' : '打卡',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: done
+                    ? context.colors.mutedForeground
+                    : context.colors.onPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _AnalyticsCard extends StatelessWidget {
@@ -397,8 +610,13 @@ class _AnalyticsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(LucideIcons.areaChart, size: 17),
-              const SizedBox(width: 7),
+              const TintedIcon(
+                icon: LucideIcons.areaChart,
+                size: 36,
+                iconSize: 18,
+                radius: AppCorner.sm,
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '数据统计与趋势',
@@ -414,18 +632,18 @@ class _AnalyticsCard extends StatelessWidget {
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('近 6 个月'),
-                    SizedBox(width: 2),
+                    const SizedBox(width: 2),
                     Icon(LucideIcons.chevronRight, size: 16),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text('本月新增资产金额', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 3),
           Row(
@@ -433,28 +651,31 @@ class _AnalyticsCard extends StatelessWidget {
             children: [
               Text(
                 '¥ ${NumberFormat('#,##0.00').format(currentMonth?.amount ?? 0)}',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(width: 6),
-              Text(
-                '${currentMonth?.itemCount ?? 0} 件',
-                style: Theme.of(context).textTheme.bodySmall,
+              const SizedBox(width: 7),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '${currentMonth?.itemCount ?? 0} 件',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           SizedBox(height: 118, child: _PurchaseTrendChart(months: months)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(99),
+            borderRadius: BorderRadius.circular(AppCorner.full),
             child: LinearProgressIndicator(
               value: leadingPercent,
-              minHeight: 6,
+              minHeight: 7,
               backgroundColor: context.colors.muted,
               color: context.colors.accent,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 7),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -505,7 +726,7 @@ class _PurchaseTrendChart extends StatelessWidget {
           drawVerticalLine: false,
           horizontalInterval: chartMax / 3,
           getDrawingHorizontalLine: (_) => FlLine(
-            color: context.colors.border.withValues(alpha: .65),
+            color: context.colors.border.withValues(alpha: .55),
             strokeWidth: 1,
           ),
         ),
@@ -546,7 +767,7 @@ class _PurchaseTrendChart extends StatelessWidget {
           touchTooltipData: LineTouchTooltipData(
             fitInsideHorizontally: true,
             fitInsideVertically: true,
-            tooltipBorderRadius: BorderRadius.circular(9),
+            tooltipBorderRadius: BorderRadius.circular(AppCorner.md),
             getTooltipColor: (_) => Theme.of(context).colorScheme.onSurface,
             getTooltipItems: (spots) => spots.map((spot) {
               final month = months[spot.x.round()];
@@ -565,18 +786,18 @@ class _PurchaseTrendChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            curveSmoothness: .3,
+            curveSmoothness: .32,
             preventCurveOverShooting: true,
-            barWidth: 2.2,
+            barWidth: 2.6,
             color: accent,
             isStrokeCapRound: true,
             dotData: FlDotData(
               show: true,
               getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
-                radius: spot.x == months.length - 1 ? 3 : 2,
+                radius: spot.x == months.length - 1 ? 3.4 : 2.2,
                 color: accent,
-                strokeWidth: 1.5,
-                strokeColor: Theme.of(context).colorScheme.surface,
+                strokeWidth: 2,
+                strokeColor: context.colors.card,
               ),
             ),
             belowBarData: BarAreaData(
@@ -585,15 +806,15 @@ class _PurchaseTrendChart extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  accent.withValues(alpha: .28),
-                  accent.withValues(alpha: .02),
+                  accent.withValues(alpha: .3),
+                  accent.withValues(alpha: .01),
                 ],
               ),
             ),
           ),
         ],
       ),
-      duration: const Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 420),
       curve: Curves.easeOutCubic,
     );
   }
@@ -732,7 +953,7 @@ Future<void> _showFullAnalytics(
           ...categories.entries.map((entry) {
             final percent = total <= 0 ? 0.0 : entry.value / total;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Column(
                 children: [
                   Row(
@@ -744,12 +965,12 @@ Future<void> _showFullAnalytics(
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(99),
+                    borderRadius: BorderRadius.circular(AppCorner.full),
                     child: LinearProgressIndicator(
                       value: percent,
-                      minHeight: 6,
+                      minHeight: 7,
                       backgroundColor: context.colors.muted,
                       color: context.colors.accent,
                     ),
@@ -764,12 +985,12 @@ Future<void> _showFullAnalytics(
           (month) => ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Container(
-              width: 42,
-              height: 42,
+              width: 44,
+              height: 44,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
+              decoration: ShapeDecoration(
                 color: context.colors.muted,
-                borderRadius: BorderRadius.circular(9),
+                shape: AppShape.all(AppCorner.sm),
               ),
               child: Text(
                 '${month.month.month}月',
@@ -797,13 +1018,18 @@ class _ExpiryAlert extends StatelessWidget {
   });
   final String name, location;
   final int days;
+
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(11),
-    decoration: BoxDecoration(
-      color: const Color(0xFFFFFBEB),
-      border: Border.all(color: const Color(0xFFFDE68A)),
-      borderRadius: BorderRadius.circular(10),
+    padding: const EdgeInsets.all(13),
+    decoration: ShapeDecoration(
+      color: const Color(
+        0xFFD97706,
+      ).withValues(alpha: context.isDark ? .16 : .08),
+      shape: AppShape.all(
+        AppCorner.md,
+        border: const Color(0xFFD97706).withValues(alpha: .28),
+      ),
     ),
     child: Row(
       children: [
@@ -812,7 +1038,7 @@ class _ExpiryAlert extends StatelessWidget {
           color: Color(0xFFD97706),
           size: 20,
         ),
-        const SizedBox(width: 9),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -822,15 +1048,13 @@ class _ExpiryAlert extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF92400E),
+                  color: Color(0xFFD97706),
                 ),
               ),
+              const SizedBox(height: 1),
               Text(
                 '存放空间：$location',
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  color: Color(0xFFA16207),
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),

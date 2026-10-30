@@ -93,11 +93,26 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  static const accentPresets = <String, Color>{
+    'blue': Color(0xFF2E7CF6),
+    'violet': Color(0xFF7C3AED),
+    'rose': Color(0xFFE11D48),
+    'amber': Color(0xFFD97706),
+    'emerald': Color(0xFF10B981),
+    'zinc': Color(0xFF52525B),
+    'slate': Color(0xFF475569),
+  };
+
   Future<void> setAccent(String name) async {
     accent = _accentFor(name);
     (await SharedPreferences.getInstance()).setString('accent', name);
     notifyListeners();
   }
+
+  Future<void> setAccentColor(Color color) => setAccent(accentHex(color));
+
+  static String accentHex(Color color) =>
+      '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
   Future<void> setAiModelMode(bool separate) async {
     separateAiModels = separate;
@@ -108,17 +123,13 @@ class AppController extends ChangeNotifier {
     );
   }
 
-  Color _accentFor(String name) =>
-      const {
-        'zinc': Color(0xFF52525B),
-        'slate': Color(0xFF475569),
-        'blue': Color(0xFF2563EB),
-        'emerald': Color(0xFF10B981),
-        'violet': Color(0xFF7C3AED),
-        'rose': Color(0xFFE11D48),
-        'amber': Color(0xFFD97706),
-      }[name] ??
-      const Color(0xFF10B981);
+  Color _accentFor(String name) {
+    if (name.startsWith('#')) {
+      final value = int.tryParse(name.substring(1), radix: 16);
+      if (value != null) return Color(0xFF000000 | value);
+    }
+    return accentPresets[name] ?? accentPresets['emerald']!;
+  }
 
   Future<void> saveItem(Map<String, Object?> values, {String? id}) async {
     await database.saveItem(values, id: id);

@@ -39,9 +39,9 @@ class AboutScreen extends StatelessWidget {
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(
+                  decoration: ShapeDecoration(
                     color: Theme.of(context).colorScheme.onSurface,
-                    borderRadius: BorderRadius.circular(14),
+                    shape: AppShape.all(AppCorner.lg),
                   ),
                   child: Icon(
                     LucideIcons.packageCheck,
@@ -59,7 +59,7 @@ class AboutScreen extends StatelessWidget {
                     message: '打开 GitHub 开源项目',
                     child: InkWell(
                       onTap: () => _openProject(context),
-                      borderRadius: BorderRadius.circular(99),
+                      borderRadius: BorderRadius.circular(AppCorner.full),
                       child: AppBadge(
                         '${state.displayVersion} · Stable',
                         icon: LucideIcons.externalLink,
@@ -101,7 +101,9 @@ class AboutScreen extends StatelessWidget {
             trailing: AppBadge('守护进程正常', color: context.colors.accent),
           ),
           ShadCard(
-            color: const Color(0xFF09090B),
+            color: context.isDark
+                ? const Color(0xFF141418)
+                : context.colors.muted,
             child: Column(
               children: logs
                   .map(
@@ -112,8 +114,8 @@ class AboutScreen extends StatelessWidget {
                         children: [
                           Text(
                             TimeOfDay.now().format(context),
-                            style: const TextStyle(
-                              color: Color(0xFF71717A),
+                            style: TextStyle(
+                              color: context.colors.mutedForeground,
                               fontSize: 10,
                               fontFamily: 'monospace',
                             ),
@@ -125,8 +127,8 @@ class AboutScreen extends StatelessWidget {
                               '[${x.$1}]',
                               style: TextStyle(
                                 color: x.$1 == 'ALARM'
-                                    ? const Color(0xFF34D399)
-                                    : const Color(0xFFA1A1AA),
+                                    ? context.colors.accent
+                                    : context.colors.mutedForeground,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'monospace',
@@ -136,8 +138,8 @@ class AboutScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               x.$2,
-                              style: const TextStyle(
-                                color: Color(0xFFD4D4D8),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 10,
                                 fontFamily: 'monospace',
                               ),
@@ -153,6 +155,12 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'MIT License · 数据归用户所有 · Local-First',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '图标素材：Microsoft Fluent Emoji（MIT）',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),

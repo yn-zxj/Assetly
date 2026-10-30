@@ -27,10 +27,25 @@ class AssetlyApp extends StatelessWidget {
         theme: AssetlyTheme.light(controller.accent),
         darkTheme: AssetlyTheme.dark(controller.accent),
         themeMode: controller.themeMode,
+        themeAnimationDuration: const Duration(milliseconds: 320),
+        themeAnimationCurve: Curves.easeOutCubic,
+        scrollBehavior: const _AppScrollBehavior(),
         home: AppShell(controller: controller),
       ),
     ),
   );
+}
+
+/// Hides platform scrollbars while keeping wheel and trackpad scrolling.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }
 
 class AppScope extends InheritedNotifier<AppController> {

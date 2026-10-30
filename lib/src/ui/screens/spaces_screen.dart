@@ -10,6 +10,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
+import '../../data/item_icons.dart';
 import '../../data/models.dart';
 import '../../state/app_controller.dart';
 import '../../theme/assetly_theme.dart';
@@ -78,11 +79,15 @@ class SpacesScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: context.colors.muted,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.colors.border),
+                  padding: const EdgeInsets.all(16),
+                  decoration: ShapeDecoration(
+                    color: context.colors.accent.withValues(
+                      alpha: context.isDark ? .12 : .06,
+                    ),
+                    shape: AppShape.all(
+                      AppCorner.lg,
+                      border: context.colors.accent.withValues(alpha: .18),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,20 +114,22 @@ class SpacesScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 10),
-                      OutlinedButton.icon(
-                        onPressed: state.locations.isEmpty
-                            ? null
-                            : () => showAssetlySheet(
-                                context,
-                                _StorageStickerSheet(controller: state),
-                              ),
-                        icon: const Icon(LucideIcons.printer, size: 17),
-                        label: const Text('生成贴纸'),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: OutlinedButton.icon(
+                          onPressed: state.locations.isEmpty
+                              ? null
+                              : () => showAssetlySheet(
+                                  context,
+                                  _StorageStickerSheet(controller: state),
+                                ),
+                          icon: const Icon(LucideIcons.printer, size: 17),
+                          label: const Text('生成贴纸'),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 80),
               ],
             ),
           ),
@@ -139,7 +146,7 @@ class SpacesScreen extends StatelessWidget {
     final state = AppScope.of(context);
     final name = TextEditingController(text: editing?.name ?? '');
     var parent = editing?.parentId ?? parentId ?? '';
-    var icon = editing?.icon ?? '📍';
+    var icon = editing?.icon ?? itemIconValue('round_pushpin');
     String? error;
     final blockedParents = <String>{};
     if (editing != null) {
@@ -199,8 +206,6 @@ class SpacesScreen extends StatelessWidget {
                   title: '空间图标',
                   subtitle: '选择便于识别房间、柜子或收纳盒的图标',
                   sheetTitle: '选择空间图标',
-                  sheetSubtitle: '图标会显示在空间列表和收纳贴纸中',
-                  choices: spaceIconChoices,
                   onChanged: (value) => setLocal(() => icon = value),
                 ),
                 const SizedBox(height: 9),
@@ -406,7 +411,7 @@ class _StorageStickerSheetState extends State<_StorageStickerSheet> {
               item.locationPath == location.fullPath ||
               item.locationPath.startsWith('${location.fullPath} >'),
         )
-        .map((item) => '${item.icon} ${item.name}')
+        .map((item) => '${itemIconGlyph(item.icon)} ${item.name}')
         .toList();
     final medicines = state.medicines
         .where(
@@ -459,7 +464,7 @@ class _StorageStickerSheetState extends State<_StorageStickerSheet> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${location.icon} ${location.name}',
+                      '${itemIconGlyph(location.icon)} ${location.name}',
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 22,
@@ -604,14 +609,14 @@ class _SpaceCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 46,
+                height: 46,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
+                decoration: ShapeDecoration(
                   color: context.colors.muted,
-                  borderRadius: BorderRadius.circular(9),
+                  shape: AppShape.all(AppCorner.md),
                 ),
-                child: Text(rootIcon, style: const TextStyle(fontSize: 21)),
+                child: ItemIconArt(rootIcon, size: 24),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -666,10 +671,7 @@ class _SpaceCard extends StatelessWidget {
                 child: ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  leading: Text(
-                    location.icon,
-                    style: const TextStyle(fontSize: 19),
-                  ),
+                  leading: ItemIconArt(location.icon, size: 22),
                   title: Text(location.name),
                   subtitle: Text('${location.itemCount} 件物品'),
                   trailing: const Icon(LucideIcons.settings2, size: 17),

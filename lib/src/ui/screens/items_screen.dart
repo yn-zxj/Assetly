@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../app.dart';
+import '../../data/item_icons.dart';
 import '../../data/models.dart';
 import '../../theme/assetly_theme.dart';
 import '../widgets/common.dart';
@@ -61,30 +62,17 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 34,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: ['全部', ...state.categories.map((c) => c.name)]
-                        .map(
-                          (x) => Padding(
-                            padding: const EdgeInsets.only(right: 7),
-                            child: ChoiceChip(
-                              label: Text(
-                                '$x${x == '全部' ? ' (${state.items.length})' : ''}',
-                              ),
-                              selected: category == x,
-                              onSelected: (_) => setState(() => category = x),
-                              showCheckmark: false,
-                              labelStyle: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
+                PillFilterBar<String>(
+                  value: category,
+                  onChanged: (value) => setState(() => category = value),
+                  options: ['全部', ...state.categories.map((c) => c.name)]
+                      .map(
+                        (x) => PillFilterOption(
+                          x,
+                          '$x${x == '全部' ? ' (${state.items.length})' : ''}',
+                        ),
+                      )
+                      .toList(),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -183,14 +171,14 @@ class _ItemTile extends StatelessWidget {
     child: Row(
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: 50,
+          height: 50,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
+          decoration: ShapeDecoration(
             color: context.colors.muted,
-            borderRadius: BorderRadius.circular(9),
+            shape: AppShape.all(AppCorner.md),
           ),
-          child: Text(item.icon, style: const TextStyle(fontSize: 22)),
+          child: ItemIconArt(item.icon, size: 26),
         ),
         const SizedBox(width: 11),
         Expanded(
@@ -205,7 +193,10 @@ class _ItemTile extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${item.locationPath} · ${item.barcode.isEmpty ? '无条码' : item.barcode}',
+                [
+                  if (item.locationPath.isNotEmpty) item.locationPath,
+                  item.barcode.isEmpty ? '无条码' : item.barcode,
+                ].join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
@@ -269,7 +260,7 @@ Future<bool> showItemForm(
         ? ''
         : item.resaleAmount.toString(),
   );
-  var icon = item?.icon ?? '📦';
+  var icon = item?.icon ?? itemIconValue('package');
   final presetCategory = state.categories
       .where((x) => x.name == preset?['category'])
       .firstOrNull;
