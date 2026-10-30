@@ -24,7 +24,7 @@ Assetly 使用 Flutter 重构，重点改善原 Tauri 客户端在手机端的�
 ### 家庭物品
 
 - 新增、修改、删除、搜索及状态筛选
-- 自定义物品 Emoji 图标、分类和存放空间
+- 自定义物品图标（Microsoft Fluent 3D 图标库，可搜索和按分类筛选）、分类和存放空间
 - 购买日期、价格、条码、质保日期和退役/转售记录
 - 资产详情、使用天数和日均成本
 - 首页近 6 个月新增资产金额统计及完整月份明细
@@ -41,7 +41,7 @@ Assetly 使用 Flutter 重构，重点改善原 Tauri 客户端在手机端的�
 
 - 多层级空间和完整路径
 - 新增、重命名、删除及添加子空间
-- 自定义空间 Emoji 图标
+- 自定义空间图标（同一套 Fluent 3D 图标库）
 - 空间资产数量、总值和二维码收纳贴纸
 
 ### 智能录入
@@ -65,7 +65,7 @@ Assetly 使用 Flutter 重构，重点改善原 Tauri 客户端在手机端的�
 
 ## 安装
 
-稳定版 APK 可从 [GitHub Releases](https://github.com/yn-zxj/Assetly/releases) 下载：
+介绍与截图见 [项目主页](https://yn-zxj.github.io/Assetly/)，稳定版 APK 从 [GitHub Releases](https://github.com/yn-zxj/Assetly/releases) 下载：
 
 - `android-universal.apk`：适合不确定设备架构时安装
 - `android-arm64-v8a.apk`：适合绝大多数现代 Android 手机，体积更小
