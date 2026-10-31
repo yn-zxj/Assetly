@@ -186,7 +186,7 @@
   ol.steps li { margin: 6px 0; }
   @media (max-width: 900px) { .download-grid { grid-template-columns: 1fr; } }
 
-  .specs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+  .specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
   .spec { padding: 14px; border-radius: 14px; background: var(--card-soft); border: 1px solid var(--border); }
   .spec span { display: block; font-size: 12px; color: var(--muted); }
   .spec b { font-size: 15px; }
@@ -244,8 +244,6 @@
         </div>
         <div class="meta">
           <span>Android 7.0+</span>
-          <span>•</span>
-          <span>安装包 <b id="sizeLabel">约 28 MB</b></span>
           <span>•</span>
           <span>数据仅存本机</span>
         </div>
@@ -358,7 +356,6 @@
               <div class="spec"><span>版本</span><b id="specVersion">v1.3.8</b></div>
               <div class="spec"><span>系统</span><b>Android 7.0+</b></div>
               <div class="spec"><span>签名 SHA-256</span><b style="font-size:12px">见校验和</b></div>
-              <div class="spec"><span>体积</span><b id="specSize">约 28 MB</b></div>
             </div>
           </div>
           <div>
@@ -410,7 +407,6 @@
 
   (function () {
     var api = 'https://api.github.com/repos/yn-zxj/Assetly/releases/latest';
-    function mb(bytes) { return (bytes / 1024 / 1024).toFixed(1) + ' MB'; }
     fetch(api, { headers: { Accept: 'application/vnd.github+json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
@@ -426,8 +422,6 @@
         }
         if (universal) {
           document.getElementById('downloadBtn').href = universal.browser_download_url;
-          document.getElementById('sizeLabel').textContent = mb(universal.size);
-          document.getElementById('specSize').textContent = mb(universal.size);
           document.getElementById('downloadBtn').setAttribute('download', universal.name);
         }
         var abis = [
